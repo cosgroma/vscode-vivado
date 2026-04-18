@@ -9,6 +9,7 @@ IP Build 3369179
 `settings.bat` also makes these available locally: `vivado`, `xvhdl`, `xvlog`, `xelab`, and `xsim`.
 
 **Key References**
+
 - [UG973: Vivado 2021.2 Release Notes, Installation, and Licensing](https://docs.amd.com/r/2021.2-English/ug973-vivado-release-notes-install-license/Download-and-Installation)
 - [AMD/Xilinx Vivado What’s New, 2021.2 section](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado/vivado-whats-new.html)
 - [UG892: Vivado 2021.2 Design Flows Overview](https://docs.amd.com/r/2021.2-English/ug892-vivado-design-flows-overview/Vivado-System-Level-Design-Flows)
@@ -35,9 +36,11 @@ Vivado exposes several useful interfaces:
 - **GUI interface:** the Vivado IDE for project management, IP configuration, timing/debug views, waveform analysis, Hardware Manager, and implementation runs.
 
 - **Tcl API:** probably the most important automation interface. Vivado can run interactively with `vivado -mode tcl` or headless with:
+
   ```cmd
   vivado -mode batch -source script.tcl -tclargs ...
   ```
+
   The Tcl API exposes projects, filesets, runs, cells, nets, pins, ports, clocks, timing paths, reports, IP, block designs, hardware targets, and simulator state.
 
 - **Design artifacts:** `.xpr` projects, `.xci` IP customizations, `.bd` block designs, `.dcp` design checkpoints, `.xdc` constraints, `.bit` bitstreams, simulation scripts, and exported hardware/platform metadata.
