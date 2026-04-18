@@ -95,6 +95,10 @@ suite('Extension checkCppProperties', () => {
             return origGetConfig(section);
         };
 
+        // Stub registerCommand so re-activating doesn't throw "command already exists".
+        const origRegisterCommand = vscode.commands.registerCommand.bind(vscode.commands);
+        (vscode.commands as any).registerCommand = (_id: string, _handler: (...args: any[]) => any) => ({ dispose: () => { /* no-op */ } });
+
         try {
             await withStub(
                 vscode.window as any,
@@ -109,6 +113,7 @@ suite('Extension checkCppProperties', () => {
             );
         } finally {
             (vscode.workspace as any).getConfiguration = origGetConfig;
+            (vscode.commands as any).registerCommand = origRegisterCommand;
         }
 
         assert.strictEqual(warningShown, true, 'A warning must be shown when hlsPath is empty');
@@ -125,6 +130,10 @@ suite('Extension checkCppProperties', () => {
             return origGetConfig(section);
         };
 
+        // Stub registerCommand so re-activating doesn't throw "command already exists".
+        const origRegisterCommand = vscode.commands.registerCommand.bind(vscode.commands);
+        (vscode.commands as any).registerCommand = (_id: string, _handler: (...args: any[]) => any) => ({ dispose: () => { /* no-op */ } });
+
         try {
             await withStub(
                 vscode.window as any,
@@ -138,6 +147,7 @@ suite('Extension checkCppProperties', () => {
             );
         } finally {
             (vscode.workspace as any).getConfiguration = origGetConfig;
+            (vscode.commands as any).registerCommand = origRegisterCommand;
         }
 
         assert.strictEqual(warningShown, false, 'No warning should be shown when hlsPath is properly set');
