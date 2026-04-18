@@ -179,8 +179,10 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
+    "precoverage": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "vscode-test",
+    "coverage": "vscode-test --coverage && node scripts/verify-coverage.mjs",
     "mock:workspace": "node scripts/create-mock-workspace.mjs",
     "docs:build": "python -m mkdocs build --strict",
     "docs:serve": "python -m mkdocs serve"
