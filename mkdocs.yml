@@ -1,0 +1,26 @@
+site_name: VS Code Vivado
+site_description: Documentation and roadmap for Vivado project support in Visual Studio Code.
+repo_url: https://github.com/cosgroma/vscode-vivado
+edit_uri: edit/main/docs/
+strict: true
+
+theme:
+  name: readthedocs
+  highlightjs: true
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Features: features.md
+  - Vivado Roadmap: roadmap.md
+  - Settings: settings.md
+  - Development: development.md
+  - Testing: testing.md
+  - References:
+      - VS Code Extensions: references-vscode.md
+      - Vivado: references-vivado.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true

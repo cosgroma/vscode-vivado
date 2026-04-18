@@ -1,5 +1,7 @@
 out
 dist
+site/
+scratch/
 node_modules
 .vscode-test/
 *.vsix
