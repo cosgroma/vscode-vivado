@@ -64,7 +64,7 @@ Useful options:
 - `--part <part>` and `--board <board>` set Vivado metadata.
 - `--force` replaces an existing mock workspace.
 
-The `hls` and `mixed` fixtures activate the current extension because they contain an `hls.app` file. The `vivado` fixture is present for future Vivado discovery work and does not activate the current HLS-only extension by itself.
+The `hls` and `mixed` fixtures activate the current extension because they contain an `hls.app` file. The `vivado` fixture activates the extension because it contains a `.xpr` file, matching the `workspaceContains:**/*.xpr` activation event.
 
 ## Current HLS Coverage Targets
 
