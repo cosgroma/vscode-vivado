@@ -186,9 +186,8 @@ suite('ProjectsViewTreeProvider', () => {
     test('getTreeItem returns the element unchanged', () => {
         const project = makeProject('proj');
         const item = new ProjectSourceItem(project);
-        // getTreeItem is typed to accept ProjectTreeItem, but at runtime it just
-        // returns the element.  Cast to any to call it without the private type.
-        const result = (provider as any).getTreeItem(item);
+        // getTreeItem accepts a vscode.TreeItem; call it directly on the provider.
+        const result = provider.getTreeItem(item as unknown as Parameters<typeof provider.getTreeItem>[0]);
         assert.strictEqual(result, item);
     });
 

@@ -119,9 +119,10 @@ suite('vitisRun', () => {
         try {
             await vitisRun(vscode.Uri.file('/workspace'), 'open_project proj\nexit', 'my-task');
             assert.strictEqual(tempFiles.length, 1, 'Exactly one TCL temp file should have been written');
+            // The temp file path must follow the expected naming convention.
             assert.ok(
-                fs.existsSync(tempFiles[0]) === false || true, // file may or may not be cleaned up already
-                'TCL temp file should have been created'
+                path.basename(tempFiles[0]).startsWith('vitis-hls-ide-tcl-'),
+                'TCL temp file name must start with vitis-hls-ide-tcl-'
             );
         } finally {
             (fs as any).writeFileSync = origWrite;

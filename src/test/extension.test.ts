@@ -70,7 +70,7 @@ suite('Extension activation', () => {
             'showWarningMessage',
             async () => undefined,
             async () => {
-                assert.doesNotThrow(() => ext.activate(fakeContext));
+                await assert.doesNotReject(async () => ext.activate(fakeContext));
             }
         );
     });
