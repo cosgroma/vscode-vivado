@@ -1,51 +1,263 @@
 # Testing
 
-## Current Test Command
+## Purpose
 
-Run the extension test suite:
+This project needs two things at the same time:
+
+- fast and reliable confidence for normal pull requests,
+- and enough real-tool validation to catch integration mistakes at the Vivado boundary.
+
+Those goals are in tension when a feature depends on large vendor tools, licenses,
+and machine-specific setup. The testing strategy for this repository should
+therefore keep most coverage vendor-free, then add a small amount of real
+Vivado-backed validation where it provides the most value.
+
+## Current State
+
+Run the current test command with:
 
 ```powershell
 npm test
 ```
 
-The test command runs:
+Today that command runs:
 
 - TypeScript compilation.
 - ESLint.
 - VS Code extension tests through `@vscode/test-cli`.
 
-## Current Coverage
+The current suite is still early. The harness is in place, but the repository is
+not yet getting most of its confidence from behavioral tests.
 
-The current test suite contains the generated sample test only. It verifies that the VS Code test runner can launch, but it does not yet cover extension behavior.
+## Testing Principles
 
-## Coverage Support References
+Use these rules to guide all new test work:
 
-Coverage support has two different meanings for this project:
+1. Keep ordinary pull request checks fast and license-free.
+2. Push logic into testable modules before adding more UI-only tests.
+3. Treat Vivado execution as a boundary with a small, explicit surface.
+4. Prefer deterministic fixtures over large generated workspaces.
+5. Keep vendor-backed tests small, high-signal, and easy to rerun.
+6. Do not make contributors depend on a local Vivado install unless the change
+   truly needs it.
 
-- Measuring coverage of the extension's own TypeScript tests.
-- Exposing Vivado, XSim, or HDL regression coverage through VS Code once the extension has a real Vivado test surface.
+## Test Layers
 
-Useful references:
+The repository should use four test layers.
 
-- [VS Code Testing](https://code.visualstudio.com/docs/debugtest/testing): user-facing Test Explorer and Test Coverage behavior. VS Code can show coverage in the Test Coverage view, editor gutter, Explorer, diff editor, and coverage toolbar when a testing extension provides coverage data.
-- [VS Code Testing API](https://code.visualstudio.com/api/extension-guides/testing): extension-author API for test discovery, run profiles, and coverage. Coverage data is attached to a `TestRun` with `run.addCoverage()`, usually from a `TestRunProfileKind.Coverage` profile.
-- [Testing Extensions](https://code.visualstudio.com/api/working-with-extensions/testing-extension): official setup for extension integration tests with `@vscode/test-cli`, `@vscode/test-electron`, Mocha, and the Microsoft Extension Test Runner.
-- [VS Code Extension Test Runner](https://marketplace.visualstudio.com/items?itemName=ms-vscode.extension-test-runner): marketplace extension for running this repo's `.vscode-test`-based extension tests from the VS Code Testing view.
-- [Coverage Gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters): language-agnostic local coverage viewer for LCOV/XML coverage files.
-- [VSCode LCOV](https://marketplace.visualstudio.com/items?itemName=alexdima.vscode-lcov): focused LCOV viewer with line and branch coverage rendering, report generation, watch support, and JavaScript source map support.
-- [Vitest VS Code extension](https://marketplace.visualstudio.com/items?itemName=vitest.explorer): useful reference if unit tests move from Mocha-only extension-host tests toward a faster Vitest layer; the extension supports Test Explorer integration and coverage.
+### Layer 1: Pure unit tests
 
-Near-term, keep `@vscode/test-cli` for extension-host integration tests and add a separate fast unit-test layer before chasing coverage percentages. Once coverage output exists, prefer LCOV so external viewers and CI services can consume the same artifact.
+This should become the largest test layer.
 
-## Mock Workspaces
+These tests should run in plain Node without launching VS Code and without
+requiring Vivado. Focus first on modules that transform input files and settings
+into internal models or generated commands.
 
-Create a disposable mock workspace for manual extension testing:
+Good targets:
+
+- `.xpr` parsing and metadata extraction,
+- `hls.app` parsing and validation,
+- fileset grouping,
+- project model creation,
+- tree model building before conversion to VS Code `TreeItem` objects,
+- TCL generation,
+- command-line construction,
+- tool path resolution,
+- problem matcher parsing,
+- path normalization and path-with-spaces handling.
+
+These tests should be the default place to add coverage when new behavior is
+introduced.
+
+### Layer 2: Extension-host integration tests
+
+Use the existing VS Code extension test harness for integration behavior that
+needs a real extension host.
+
+These tests should verify things such as:
+
+- activation on `hls.app` workspaces,
+- activation on `.xpr` workspaces,
+- command registration,
+- project discovery wiring,
+- tree provider population,
+- expected user-facing errors for missing settings or missing tools,
+- diagnostics surfaced from parsed tool output.
+
+These tests should still avoid calling Vivado directly when possible. Prefer
+fakes or stubs for process execution so the extension behavior can be tested
+without a vendor install.
+
+### Layer 3: Tool contract tests
+
+This layer verifies the contract between the extension and Vivado without
+requiring a real Vivado run.
+
+Typical assertions:
+
+- correct executable selection,
+- correct working directory,
+- correct command-line arguments,
+- correct environment variables,
+- correct generated TCL scripts,
+- correct expected output file locations,
+- correct parsing of representative stdout, stderr, and log files.
+
+These tests are especially valuable because they lock down the tool boundary
+without introducing CI fragility.
+
+### Layer 4: Vendor-backed smoke tests
+
+Keep this layer intentionally small.
+
+These tests run only where Vivado is actually installed and licensed. Their job
+is to prove that the contract still works with the real toolchain, not to carry
+all repository quality by themselves.
+
+Good smoke-test candidates:
+
+- launch Vivado in batch mode against a tiny fixture project,
+- run a harmless metadata or report query,
+- verify that generated TCL executes successfully,
+- verify basic warning and error parsing against real tool output,
+- optionally run one very small synthesis-oriented flow if runtime is acceptable.
+
+Avoid turning this layer into a large regression suite. It will be slower,
+harder to debug, and harder to keep portable.
+
+## Fixture Strategy
+
+The repository already has mock workspace support. Keep that, but move toward a
+stable fixture layout for automated testing.
+
+Recommended layout:
+
+```text
+src/
+  test/
+    fixtures/
+      hls/
+        minimal-valid/
+        malformed-app/
+      vivado/
+        minimal-xpr/
+        spaces-in-path/
+        missing-files/
+        read-only-project/
+      mixed/
+        minimal/
+```
+
+For fixtures that drive parsing or tree-model tests, add expected normalized
+outputs beside the fixture where helpful. Examples:
+
+```text
+expected-project-model.json
+expected-tree.json
+expected-generated-tcl.tcl
+```
+
+Use deterministic fixtures for automated tests. Keep generated mock workspaces
+for manual bring-up, demos, and exploratory local development.
+
+## CI Strategy
+
+### Required checks on all pull requests
+
+Every pull request should run only checks that are fast, reproducible, and do
+not require Vivado.
+
+Recommended required checks:
+
+- install dependencies,
+- compile TypeScript,
+- run ESLint,
+- run pure unit tests,
+- run extension-host integration tests with fake tool runners,
+- run fixture and snapshot tests if present.
+
+These checks should be the main branch-protection gates.
+
+### Vendor-backed CI
+
+Vivado-backed tests should run separately from ordinary pull request gates.
+
+Recommended options:
+
+- self-hosted runner with Vivado installed,
+- manually triggered workflow,
+- scheduled nightly workflow,
+- label-gated or branch-gated workflow for changes that touch the tool boundary.
+
+Good triggers include changes under areas such as:
+
+- Vivado process-launch code,
+- TCL generation,
+- project parsing,
+- problem matcher logic,
+- tool-location logic,
+- CI or workflow definitions for vendor-backed testing.
+
+Unless the repository later gains a stable and well-maintained private runner
+fleet, do not make every public pull request depend on Vivado-backed jobs.
+
+### Release readiness
+
+Before a release or marketplace publish, require both:
+
+- all ordinary pull request checks green,
+- the vendor-backed smoke workflow green for the supported tool version or
+  versions.
+
+This keeps everyday development efficient while still giving release builds a
+real toolchain checkpoint.
+
+## Design Guidance For Testability
+
+The easiest way to improve testing is to improve boundaries in the code.
+
+Prefer designs like:
+
+```text
+workspace files -> project model -> tree model -> VS Code UI objects
+```
+
+and:
+
+```text
+action request -> command builder -> process runner -> parsed result
+```
+
+Practical guidance:
+
+- Keep parsing separate from UI code.
+- Keep tree-model creation separate from `TreeItem` creation.
+- Keep TCL generation separate from process launch.
+- Introduce a small process-runner abstraction so tests can inject a fake runner.
+- Normalize tool output before asserting on it.
+- Test intermediate models where possible instead of only asserting on labels in
+  the UI.
+
+This structure makes both unit tests and extension-host tests easier to write and
+less brittle.
+
+## Local Development Workflows
+
+### Basic test run
+
+Run the normal repository checks:
+
+```powershell
+npm test
+```
+
+### Mock workspaces for manual testing
+
+Create a disposable mock workspace:
 
 ```powershell
 npm run mock:workspace
 ```
-
-By default this creates an HLS workspace under `scratch/mock-hls-workspace`. Open that folder in the Extension Development Host to activate the extension and inspect the Projects tree.
 
 Choose the fixture shape with `--type`:
 
@@ -64,39 +276,67 @@ Useful options:
 - `--part <part>` and `--board <board>` set Vivado metadata.
 - `--force` replaces an existing mock workspace.
 
-The `hls` and `mixed` fixtures activate the current extension because they contain an `hls.app` file. The `vivado` fixture activates the extension because it contains a `.xpr` file, matching the `workspaceContains:**/*.xpr` activation event.
+The `hls` and `mixed` fixtures activate the extension because they contain an
+`hls.app` file. The `vivado` fixture activates the extension because it contains
+a `.xpr` file, matching the `workspaceContains:**/*.xpr` activation event.
 
-## Current HLS Coverage Targets
+## Near-Term Priorities
 
-Add tests for these areas first:
+Add coverage in this order.
 
-- `HLSProject.fromFile` parsing for valid, empty, and malformed `hls.app` files.
-- Project manager refresh behavior for added, changed, and removed projects.
-- Projects tree grouping and sorting for source files, test bench files, and solutions.
-- Add/remove file commands, including cancellation and test bench path handling.
-- Run commands, including TCL generation, missing settings, exit code handling, and missing logs.
-- C++ properties checks for missing settings and partial `c_cpp_properties.json` configurations.
+### 1. Fast unit-test foundation
 
-## To-Be Vivado Coverage Targets
+Start by covering:
 
-Vivado support should be test-first where possible. Add coverage for:
+- `hls.app` parsing for valid, empty, and malformed inputs,
+- `.xpr` parsing for valid, partial, and malformed inputs,
+- model-building and grouping logic,
+- generated TCL for current and planned run commands,
+- tool-path discovery and missing-tool handling,
+- path normalization with Windows path edge cases.
 
-- `.xpr` discovery and activation.
-- Vivado project metadata parsing.
-- Fileset grouping for design sources, simulation sources, and constraints.
-- IP, block design, and TCL script tree items.
-- Generated TCL for synthesis, implementation, bitstream, and simulation tasks.
-- Vivado problem matchers for warnings and errors.
-- Missing Vivado installation handling.
-- Paths with spaces on Windows.
-- Read-only behavior that never rewrites `.xpr` files during discovery.
+### 2. Extension-host behavior
 
-## VS Code Test Workspaces
+Then cover:
 
-Useful next fixtures:
+- workspace activation,
+- project refresh behavior,
+- command registration,
+- tree-node presence and grouping,
+- missing-setting and missing-tool user messages.
 
-- A minimal Vitis HLS project for the inherited `hls.app` behavior.
-- A minimal Vivado `.xpr` project for the target workflow.
-- A script-only Vivado TCL workspace for users who do not check in generated project files.
+### 3. Tool contract coverage
 
-Integration tests can open those workspaces, activate the extension, and assert that project tree nodes and commands are registered.
+Next, add tests that verify:
+
+- launch arguments,
+- environment setup,
+- working-directory selection,
+- expected log and report locations,
+- parsing of representative tool output.
+
+### 4. Minimal real-tool smoke coverage
+
+Finally, add a very small Vivado-backed smoke workflow on infrastructure that
+already has the tool installed and licensed.
+
+## What Not To Do
+
+Avoid these patterns:
+
+- making extension-host tests the only serious test layer,
+- requiring Vivado for normal pull request validation,
+- asserting only on UI text when a model-level assertion would be more stable,
+- using large generated projects as the main automated fixtures,
+- depending on exact raw vendor output formatting when normalized parsing would
+  be more robust,
+- turning real-tool CI into a slow full regression suite.
+
+## Summary
+
+The repository should get most of its confidence from small, deterministic,
+vendor-free tests. Real Vivado-backed testing is still important, but it should
+be narrow, intentional, and separated from ordinary contributor workflows.
+
+That balance is the most practical path for a VS Code extension that integrates
+with large licensed FPGA tools.
