@@ -16,6 +16,13 @@ Install documentation dependencies:
 python -m pip install -r requirements-docs.txt
 ```
 
+The repository also includes Makefile shortcuts for the common development
+lifecycle. To install both extension and documentation dependencies:
+
+```powershell
+make setup
+```
+
 ## Build The Extension
 
 Compile TypeScript:
@@ -28,6 +35,19 @@ Run lint:
 
 ```powershell
 npm run lint
+```
+
+Equivalent Makefile shortcuts are available:
+
+```powershell
+make compile
+make lint
+```
+
+Run the full extension and documentation check sequence:
+
+```powershell
+make check
 ```
 
 ## Run The Extension Locally
@@ -61,4 +81,11 @@ Serve the documentation locally while editing:
 
 ```powershell
 python -m mkdocs serve
+```
+
+Equivalent Makefile shortcuts are available:
+
+```powershell
+make docs
+make docs-serve
 ```
