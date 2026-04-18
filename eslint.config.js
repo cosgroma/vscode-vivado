@@ -1,35 +1,35 @@
 // @ts-check
-const tseslint = require("@typescript-eslint/eslint-plugin");
-const tsParser = require("@typescript-eslint/parser");
+const typescriptEslintPlugin = require('@typescript-eslint/eslint-plugin');
+const typescriptEslintParser = require('@typescript-eslint/parser');
 
-/** @type {import("eslint").Linter.Config[]} */
 module.exports = [
     {
-        ignores: ["out/**", "dist/**", "**/*.d.ts"]
+        ignores: ['out/**', 'dist/**', '**/*.d.ts']
     },
     {
-        files: ["src/**/*.ts"],
-        plugins: {
-            "@typescript-eslint": tseslint
-        },
+        files: ['src/**/*.ts'],
         languageOptions: {
-            parser: tsParser,
+            parser: typescriptEslintParser,
             parserOptions: {
                 ecmaVersion: 6,
-                sourceType: "module"
+                sourceType: 'module'
             }
         },
+        plugins: {
+            '@typescript-eslint': typescriptEslintPlugin
+        },
         rules: {
-            "@typescript-eslint/naming-convention": [
-                "warn",
+            '@typescript-eslint/naming-convention': [
+                'warn',
                 {
-                    "selector": "import",
-                    "format": ["camelCase", "PascalCase"]
+                    selector: 'import',
+                    format: ['camelCase', 'PascalCase']
                 }
             ],
-            "curly": "warn",
-            "eqeqeq": "warn",
-            "no-throw-literal": "warn"
+            'curly': 'warn',
+            'eqeqeq': 'warn',
+            'no-throw-literal': 'warn',
+            'semi': 'off'
         }
     }
 ];

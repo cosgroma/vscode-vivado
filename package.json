@@ -39,7 +39,8 @@
   "homepage": "https://github.com/cosgroma/vscode-vivado#readme",
   "activationEvents": [
     "onView:projectsView",
-    "workspaceContains:**/hls.app"
+    "workspaceContains:**/hls.app",
+    "workspaceContains:**/*.xpr"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -178,7 +179,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src",
     "test": "vscode-test",
     "mock:workspace": "node scripts/create-mock-workspace.mjs",
     "docs:build": "python -m mkdocs build --strict",
