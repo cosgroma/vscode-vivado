@@ -74,7 +74,7 @@ async function main() {
   console.log('');
 
   if (options.type === 'vivado') {
-    console.log('Note: Vivado mock workspaces are for future extension work and do not activate the current HLS-only extension.');
+    console.log('Open this folder in an Extension Development Host to activate the extension via the .xpr file.');
   } else {
     console.log('Open this folder in an Extension Development Host to see the HLS project tree.');
   }
@@ -271,7 +271,7 @@ The current extension discovers this project and renders it in the Vitis HLS IDE
 - Part: \`${options.part}\`
 - Board: \`${options.board}\`
 
-This fixture is intended for future Vivado project discovery and tree-view work.`);
+The extension activates this workspace via the \`workspaceContains:**/*.xpr\` activation event. Vivado project discovery and tree-view support are under active development.`);
   }
 
   await writeText(targetRoot, 'README.md', `# Mock FPGA Workspace

@@ -59,6 +59,33 @@ suite('Extension Test Suite', () => {
     });
 });
 
+// ── package.json activation events ────────────────────────────────────────
+
+suite('Package activation events', () => {
+
+    let activationEvents: string[];
+
+    suiteSetup(() => {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const pkg = require('../../package.json') as { activationEvents: string[] };
+        activationEvents = pkg.activationEvents ?? [];
+    });
+
+    test('activates on hls.app workspaces', () => {
+        assert.ok(
+            activationEvents.includes('workspaceContains:**/hls.app'),
+            'package.json must declare workspaceContains:**/hls.app'
+        );
+    });
+
+    test('activates on Vivado .xpr workspaces', () => {
+        assert.ok(
+            activationEvents.includes('workspaceContains:**/*.xpr'),
+            'package.json must declare workspaceContains:**/*.xpr'
+        );
+    });
+});
+
 // ── activation ─────────────────────────────────────────────────────────────
 
 suite('Extension activation', () => {
