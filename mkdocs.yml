@@ -16,6 +16,7 @@ nav:
   - Settings: settings.md
   - Development: development.md
   - Testing: testing.md
+  - Issue Dependency Plan: issue-dependency-plan.md
   - References:
       - VS Code Extensions: references-vscode.md
       - Vivado: references-vivado.md
