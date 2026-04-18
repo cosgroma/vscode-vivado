@@ -43,6 +43,10 @@ nav:
 
 plugins:
   - search
+  # git-revision-date-localized uses Git history to determine page creation
+  # and last-updated dates. In CI, ensure the repository is checked out with
+  # full history (for example, actions/checkout with fetch-depth: 0), because
+  # shallow clones can cause incorrect or identical dates across pages.
   - git-revision-date-localized:
       enable_creation_date: true
       type: date
@@ -67,7 +71,11 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:
