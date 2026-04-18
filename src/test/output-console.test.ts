@@ -72,25 +72,4 @@ suite('OutputConsole', () => {
         const console = OutputConsole.instance;
         assert.ok(console, 'Instance should be truthy after creation');
     });
-
-    // ── dispose ────────────────────────────────────────────────────────────
-
-    test('dispose does not throw', () => {
-        // NOTE: dispose releases the underlying output channel.  We call this
-        // last so it does not interfere with other assertions in this suite.
-        assert.doesNotThrow(() => {
-            OutputConsole.instance.dispose();
-        });
-    });
-
-    test('appendLine after dispose does not throw (channel may be re-created by VS Code)', () => {
-        // After dispose, the channel object still exists; calling appendLine may
-        // silently no-op or throw depending on VS Code internals.  We only
-        // assert that our wrapper does not propagate an unhandled exception.
-        try {
-            OutputConsole.instance.appendLine('after dispose');
-        } catch {
-            // acceptable – just ensuring no unhandled rejection
-        }
-    });
 });

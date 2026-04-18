@@ -12,26 +12,8 @@ import { vitisRun } from '../../utils/vitis-run';
 // ── helpers ────────────────────────────────────────────────────────────────
 
 /**
- * Temporarily replace a property on an object, run fn, then restore.
- */
-async function withStub<T, K extends keyof T>(
-    obj: T,
-    key: K,
-    stub: T[K],
-    fn: () => Promise<void>
-): Promise<void> {
-    const original = obj[key];
-    obj[key] = stub;
-    try {
-        await fn();
-    } finally {
-        obj[key] = original;
-    }
-}
-
-/**
  * Override vscode.workspace.getConfiguration to return a fake config that
- * provides the given vitisPath (or undefined when null is passed).
+ * provides the given vitisPath (or undefined when undefined is passed).
  */
 function overrideVitisPathConfig(vitisPath: string | undefined): () => void {
     const orig = vscode.workspace.getConfiguration.bind(vscode.workspace);
@@ -45,6 +27,59 @@ function overrideVitisPathConfig(vitisPath: string | undefined): () => void {
     };
     return () => {
         (vscode.workspace as any).getConfiguration = orig;
+    };
+}
+
+/**
+ * Sets up coordinated executeTask + onDidEndTaskProcess stubs so that
+ * vitisRun's "e.execution.task === task" identity check resolves correctly.
+ *
+ * executeTask captures the task object and the synthetic task-end event fires
+ * with that same object, satisfying the strict equality check inside vitisRun.
+ *
+ * Returns a cleanup function and a getter for the captured task.
+ */
+function stubVitisRunTasks(exitCode: number | undefined): {
+    cleanup: () => void;
+    getTask: () => vscode.Task | undefined;
+} {
+    let capturedTask: vscode.Task | undefined;
+
+    const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
+    Object.defineProperty(vscode.tasks, 'executeTask', {
+        value: (task: vscode.Task) => {
+            capturedTask = task;
+            return Promise.resolve({ task } as unknown as vscode.TaskExecution);
+        },
+        configurable: true,
+        writable: true,
+    });
+
+    const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
+    Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
+        value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
+            // Schedule AFTER the current synchronous frame so that vitisRun has
+            // already registered its listener before the event fires.
+            setImmediate(() => {
+                if (capturedTask) {
+                    handler({
+                        execution: { task: capturedTask } as unknown as vscode.TaskExecution,
+                        exitCode,
+                    });
+                }
+            });
+            return { dispose: () => { /* no-op */ } };
+        },
+        configurable: true,
+        writable: true,
+    });
+
+    return {
+        cleanup: () => {
+            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
+            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+        },
+        getTask: () => capturedTask,
     };
 }
 
@@ -79,61 +114,13 @@ suite('vitisRun', () => {
     // ── TCL file creation ────────────────────────────────────────────────────
 
     test('writes the TCL content to a temp file before executing the task', async () => {
-        const tempFiles: string[] = [];
+        const expectedTcl = 'open_project proj\nexit';
 
-        // Track files written by fs.writeFileSync in the temp dir.
-        const origWrite = fs.writeFileSync.bind(fs);
-        (fs as any).writeFileSync = (file: fs.PathOrFileDescriptor, data: string | NodeJS.ArrayBufferView, ...rest: any[]) => {
-            if (typeof file === 'string' && file.includes('vitis-hls-ide-tcl-')) {
-                tempFiles.push(file);
-            }
-            origWrite(file, data, ...rest);
-        };
-
-        // Provide a valid vitisPath so we get past the guard.
-        const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
-
-        // Stub executeTask so we don't try to launch a real process.
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (_task: vscode.Task) => Promise.resolve({} as vscode.TaskExecution),
-            configurable: true,
-            writable: true,
-        });
-
-        // Stub onDidEndTaskProcess to immediately resolve with exit code 0.
-        const restoreEndTask = await (async () => {
-            const orig = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-            Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-                value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                    // Schedule a synthetic "task ended" event.
-                    setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 0 }));
-                    return { dispose: () => { /* no-op */ } };
-                },
-                configurable: true,
-                writable: true,
-            });
-            return () => { if (orig) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', orig); } };
-        })();
-
-        try {
-            await vitisRun(vscode.Uri.file('/workspace'), 'open_project proj\nexit', 'my-task');
-            assert.strictEqual(tempFiles.length, 1, 'Exactly one TCL temp file should have been written');
-            // The temp file path must follow the expected naming convention.
-            assert.ok(
-                path.basename(tempFiles[0]).startsWith('vitis-hls-ide-tcl-'),
-                'TCL temp file name must start with vitis-hls-ide-tcl-'
-            );
-        } finally {
-            (fs as any).writeFileSync = origWrite;
-            restoreConfig();
-            restoreEndTask();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-        }
-    });
-
-    test('task shell command includes --mode hls --tcl and the temp file path', async () => {
+        // Capture the shell command INSIDE executeTask – at that moment the file
+        // has already been written and not yet deleted (deletion is async).
         let capturedTask: vscode.Task | undefined;
+        let tclFilePath: string | undefined;
+        let tclFileContent: string | undefined;
 
         const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
 
@@ -141,7 +128,13 @@ suite('vitisRun', () => {
         Object.defineProperty(vscode.tasks, 'executeTask', {
             value: (task: vscode.Task) => {
                 capturedTask = task;
-                return Promise.resolve({} as vscode.TaskExecution);
+                const cmd = (task.execution as vscode.ShellExecution).commandLine ?? '';
+                const match = cmd.match(/--tcl\s+(\S+)/);
+                if (match) {
+                    tclFilePath = match[1];
+                    try { tclFileContent = fs.readFileSync(tclFilePath, 'utf8'); } catch { /* ignore */ }
+                }
+                return Promise.resolve({ task } as unknown as vscode.TaskExecution);
             },
             configurable: true,
             writable: true,
@@ -150,7 +143,11 @@ suite('vitisRun', () => {
         const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
         Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
             value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 0 }));
+                setImmediate(() => {
+                    if (capturedTask) {
+                        handler({ execution: { task: capturedTask } as unknown as vscode.TaskExecution, exitCode: 0 });
+                    }
+                });
                 return { dispose: () => { /* no-op */ } };
             },
             configurable: true,
@@ -158,13 +155,37 @@ suite('vitisRun', () => {
         });
 
         try {
-            await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'check-command');
+            await vitisRun(vscode.Uri.file('/workspace'), expectedTcl, 'tcl-content-check');
         } finally {
             restoreConfig();
             if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
             if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
         }
 
+        assert.ok(tclFilePath, 'Shell command must include a --tcl <path>');
+        assert.ok(
+            path.basename(tclFilePath!).startsWith('vitis-hls-ide-tcl-'),
+            'TCL temp file name must match the naming convention'
+        );
+        assert.ok(
+            tclFilePath!.startsWith(os.tmpdir()),
+            'TCL temp file must reside in the OS temp directory'
+        );
+        assert.strictEqual(tclFileContent, expectedTcl, 'TCL file must contain the provided TCL content');
+    });
+
+    test('task shell command includes --mode hls --tcl and the temp file path', async () => {
+        const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
+        const { cleanup, getTask } = stubVitisRunTasks(0);
+
+        try {
+            await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'check-command');
+        } finally {
+            restoreConfig();
+            cleanup();
+        }
+
+        const capturedTask = getTask();
         assert.ok(capturedTask, 'executeTask must have been called');
         const exec = capturedTask!.execution as vscode.ShellExecution;
         const cmd = typeof exec.commandLine === 'string' ? exec.commandLine : '';
@@ -174,104 +195,43 @@ suite('vitisRun', () => {
     });
 
     test('task name matches the provided taskName argument', async () => {
-        let capturedTask: vscode.Task | undefined;
-
         const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
-
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (task: vscode.Task) => {
-                capturedTask = task;
-                return Promise.resolve({} as vscode.TaskExecution);
-            },
-            configurable: true,
-            writable: true,
-        });
-
-        const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-        Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-            value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 0 }));
-                return { dispose: () => { /* no-op */ } };
-            },
-            configurable: true,
-            writable: true,
-        });
+        const { cleanup, getTask } = stubVitisRunTasks(0);
 
         try {
             await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'my-custom-task-name');
         } finally {
             restoreConfig();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+            cleanup();
         }
 
-        assert.strictEqual(capturedTask?.name, 'my-custom-task-name');
+        assert.strictEqual(getTask()?.name, 'my-custom-task-name');
     });
 
     test('task source is "Vitis HLS IDE"', async () => {
-        let capturedTask: vscode.Task | undefined;
-
         const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
-
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (task: vscode.Task) => {
-                capturedTask = task;
-                return Promise.resolve({} as vscode.TaskExecution);
-            },
-            configurable: true,
-            writable: true,
-        });
-
-        const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-        Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-            value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 0 }));
-                return { dispose: () => { /* no-op */ } };
-            },
-            configurable: true,
-            writable: true,
-        });
+        const { cleanup, getTask } = stubVitisRunTasks(0);
 
         try {
             await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'source-check');
         } finally {
             restoreConfig();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+            cleanup();
         }
 
-        assert.strictEqual(capturedTask?.source, 'Vitis HLS IDE');
+        assert.strictEqual(getTask()?.source, 'Vitis HLS IDE');
     });
 
     test('resolves with the exit code returned by the task', async () => {
         const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
-
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (_task: vscode.Task) => Promise.resolve({} as vscode.TaskExecution),
-            configurable: true,
-            writable: true,
-        });
-
-        const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-        Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-            value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 42 }));
-                return { dispose: () => { /* no-op */ } };
-            },
-            configurable: true,
-            writable: true,
-        });
+        const { cleanup } = stubVitisRunTasks(42);
 
         let result: number | undefined;
         try {
             result = await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'exit-code-check');
         } finally {
             restoreConfig();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+            cleanup();
         }
 
         assert.strictEqual(result, 42, 'vitisRun should resolve with the task exit code');
@@ -279,110 +239,49 @@ suite('vitisRun', () => {
 
     test('resolves with undefined when the task exit code is undefined (cancellation)', async () => {
         const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
-
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (_task: vscode.Task) => Promise.resolve({} as vscode.TaskExecution),
-            configurable: true,
-            writable: true,
-        });
-
-        const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-        Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-            value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: undefined }));
-                return { dispose: () => { /* no-op */ } };
-            },
-            configurable: true,
-            writable: true,
-        });
+        const { cleanup } = stubVitisRunTasks(undefined);
 
         let result: number | undefined = 999;
         try {
             result = await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'cancellation-check');
         } finally {
             restoreConfig();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+            cleanup();
         }
 
         assert.strictEqual(result, undefined, 'vitisRun should resolve with undefined for cancellation');
     });
 
     test('PATH env variable includes the Vitis bin directory', async () => {
-        let capturedTask: vscode.Task | undefined;
         const vitisPath = '/opt/Xilinx/Vitis/2023.2';
-
         const restoreConfig = overrideVitisPathConfig(vitisPath);
-
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (task: vscode.Task) => {
-                capturedTask = task;
-                return Promise.resolve({} as vscode.TaskExecution);
-            },
-            configurable: true,
-            writable: true,
-        });
-
-        const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-        Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-            value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 0 }));
-                return { dispose: () => { /* no-op */ } };
-            },
-            configurable: true,
-            writable: true,
-        });
+        const { cleanup, getTask } = stubVitisRunTasks(0);
 
         try {
             await vitisRun(vscode.Uri.file('/workspace'), 'exit', 'path-check');
         } finally {
             restoreConfig();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+            cleanup();
         }
 
-        const exec = capturedTask!.execution as vscode.ShellExecution;
+        const exec = getTask()!.execution as vscode.ShellExecution;
         const envPath: string = (exec.options as any)?.env?.PATH ?? '';
         assert.ok(envPath.includes(path.join(vitisPath, 'bin')), 'PATH must include the Vitis bin directory');
     });
 
     test('working directory is set to the provided startPath', async () => {
-        let capturedTask: vscode.Task | undefined;
         const startPath = vscode.Uri.file('/workspace/myproject');
-
         const restoreConfig = overrideVitisPathConfig('/opt/Xilinx/Vitis/2023.2');
-
-        const origExecuteTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'executeTask');
-        Object.defineProperty(vscode.tasks, 'executeTask', {
-            value: (task: vscode.Task) => {
-                capturedTask = task;
-                return Promise.resolve({} as vscode.TaskExecution);
-            },
-            configurable: true,
-            writable: true,
-        });
-
-        const origEndTask = Object.getOwnPropertyDescriptor(vscode.tasks, 'onDidEndTaskProcess');
-        Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', {
-            value: (handler: (e: { execution: vscode.TaskExecution; exitCode: number | undefined }) => void) => {
-                setImmediate(() => handler({ execution: {} as vscode.TaskExecution, exitCode: 0 }));
-                return { dispose: () => { /* no-op */ } };
-            },
-            configurable: true,
-            writable: true,
-        });
+        const { cleanup, getTask } = stubVitisRunTasks(0);
 
         try {
             await vitisRun(startPath, 'exit', 'cwd-check');
         } finally {
             restoreConfig();
-            if (origExecuteTask) { Object.defineProperty(vscode.tasks, 'executeTask', origExecuteTask); }
-            if (origEndTask) { Object.defineProperty(vscode.tasks, 'onDidEndTaskProcess', origEndTask); }
+            cleanup();
         }
 
-        const exec = capturedTask!.execution as vscode.ShellExecution;
+        const exec = getTask()!.execution as vscode.ShellExecution;
         assert.strictEqual(
             (exec.options as any)?.cwd,
             startPath.fsPath,
