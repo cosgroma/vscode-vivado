@@ -39,7 +39,8 @@
   "homepage": "https://github.com/cosgroma/vscode-vivado#readme",
   "activationEvents": [
     "onView:projectsView",
-    "workspaceContains:**/hls.app"
+    "workspaceContains:**/hls.app",
+    "workspaceContains:**/*.xpr"
   ],
   "main": "./out/extension.js",
   "contributes": {
