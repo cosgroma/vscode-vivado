@@ -188,20 +188,20 @@
     "ms-vscode.cpptools"
   ],
   "devDependencies": {
-    "@types/lodash": "^4.17.6",
+    "@types/lodash": "^4.17.24",
     "@types/mocha": "^10.0.6",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.90.0",
+    "@types/node": "25.x",
+    "@types/vscode": "^1.116.0",
     "@types/xml2js": "^0.4.14",
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
-    "@typescript-eslint/parser": "^7.11.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.2",
+    "@typescript-eslint/parser": "^8.58.2",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.5"
+    "eslint": "^10.2.1",
+    "typescript": "^6.0.3"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
+    "lodash": "^4.18.1",
     "xml2js": "^0.6.2"
   }
 }
