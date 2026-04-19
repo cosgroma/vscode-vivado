@@ -81,7 +81,7 @@ suite('vivadoRun command construction', () => {
 
         assert.strictEqual(
             command,
-            'cmd.exe /d /c """C:\\Xilinx\\Vivado\\2023.2\\bin\\vivado.bat"" -mode batch -source ""C:\\work\\run synth.tcl"""'
+            'cmd.exe /d /c ""C:\\Xilinx\\Vivado\\2023.2\\bin\\vivado.bat" -mode batch -source "C:\\work\\run synth.tcl""'
         );
     });
 
@@ -96,7 +96,7 @@ suite('vivadoRun command construction', () => {
 
         assert.strictEqual(
             command,
-            'cmd.exe /d /c "call ""C:\\Xilinx\\Vivado\\2023.2\\settings64.bat"" && ""C:\\Xilinx\\Vivado\\2023.2\\bin\\vivado.bat"" -mode batch -source ""C:\\work\\run synth.tcl"""'
+            'cmd.exe /d /c "call "C:\\Xilinx\\Vivado\\2023.2\\settings64.bat" && "C:\\Xilinx\\Vivado\\2023.2\\bin\\vivado.bat" -mode batch -source "C:\\work\\run synth.tcl""'
         );
     });
 
@@ -276,7 +276,12 @@ suite('vivadoRun task execution', () => {
         }
 
         const exec = getTask()!.execution as vscode.ShellExecution;
+        const env = (exec.options as any)?.env as Record<string, string | undefined> | undefined;
+        const pathKey = env ? Object.keys(env).find(key => key.toLowerCase() === 'path') : undefined;
+        const pathValue = pathKey ? env?.[pathKey] ?? '' : '';
+
         assert.strictEqual((exec.options as any)?.cwd, startPath.fsPath);
-        assert.ok(((exec.options as any)?.env?.PATH ?? '').includes('C:\\Xilinx\\Vivado\\2023.2\\bin'));
+        assert.ok(pathKey);
+        assert.ok(pathValue.includes('C:\\Xilinx\\Vivado\\2023.2\\bin'));
     });
 });

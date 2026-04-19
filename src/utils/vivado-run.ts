@@ -184,5 +184,5 @@ function quoteShellArgument(value: string, platform: NodeJS.Platform): string {
 }
 
 function quoteWindowsCommand(value: string): string {
-    return `"${value.replace(/"/g, '""')}"`;
+    return `"${value}"`;
 }
