@@ -115,7 +115,7 @@ export default class VivadoProjectManager extends EventEmitter<VivadoProjectMana
         const seen = new Set<string>();
 
         for (const glob of globs) {
-            const found = await this.dependencies.findFiles(glob, '**/node_modules/**', 100);
+            const found = await this.dependencies.findFiles(glob, '**/node_modules/**', undefined);
             for (const file of found) {
                 if (!seen.has(file.fsPath)) {
                     seen.add(file.fsPath);

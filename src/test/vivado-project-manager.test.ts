@@ -55,9 +55,11 @@ function makeManager(dependencies: Partial<VivadoProjectManagerDependencies>): {
 suite('VivadoProjectManager', () => {
     test('discovers .xpr projects using configured globs', async () => {
         const xprFile = vscode.Uri.file(path.join('/workspace', 'demo', 'demo.xpr'));
+        const maxResultsValues: Array<number | undefined> = [];
         const { manager, findCalls } = makeManager({
-            findFiles: (include) => {
+            findFiles: (include, _exclude, maxResults) => {
                 findCalls.push(include.toString());
+                maxResultsValues.push(maxResults);
                 return Promise.resolve([xprFile]);
             },
         });
@@ -66,6 +68,7 @@ suite('VivadoProjectManager', () => {
         const projects = await manager.getProjects();
 
         assert.deepStrictEqual(findCalls, ['**/*.xpr']);
+        assert.deepStrictEqual(maxResultsValues, [undefined]);
         assert.strictEqual(projects.length, 1);
         assert.strictEqual(projects[0].name, 'demo');
         assert.strictEqual(projects, manager.projects);

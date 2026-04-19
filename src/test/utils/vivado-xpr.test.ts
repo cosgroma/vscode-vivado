@@ -79,6 +79,26 @@ suite('Vivado XPR metadata loading', () => {
         assert.strictEqual(project.designSources[0].library, 'xil_defaultlib');
     });
 
+    test('skips file entries without usable paths', async () => {
+        const project = await parseVivadoProjectXml(
+            `<Project>
+              <FileSets>
+                <FileSet Name="sources_1" Type="DesignSrcs">
+                  <File />
+                  <File Path="   " />
+                  <File Path="$PPRDIR/src/top.sv" />
+                </FileSet>
+              </FileSets>
+            </Project>`,
+            xprUri(),
+        );
+
+        assert.strictEqual(project.filesets[0].files.length, 1);
+        assert.deepStrictEqual(project.designSources.map(file => path.basename(file.uri.fsPath)), ['top.sv']);
+        assert.deepStrictEqual(project.ips, []);
+        assert.deepStrictEqual(project.blockDesigns, []);
+    });
+
     test('resolves $PPRDIR paths relative to the project file directory', async () => {
         const project = await parseVivadoProjectXml(SAMPLE_XPR, xprUri());
         const source = project.designSources.find(file => path.basename(file.uri.fsPath) === 'counter.sv');

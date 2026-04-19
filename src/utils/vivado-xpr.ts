@@ -80,12 +80,20 @@ function readFilesets(projectNode: XmlNode, projectRoot: vscode.Uri): VivadoFile
         return new VivadoFileset({
             name,
             kind,
-            files: nodeArray(filesetNode.File).map(fileNode => new VivadoFile({
-                uri: resolveVivadoProjectPath(projectRoot, fileNode.$?.Path ?? ''),
-                kind: mapFileKind(kind, fileNode.$?.Path),
-                library: fileNode.$?.Library,
-                filesetName: name,
-            })),
+            files: nodeArray(filesetNode.File).flatMap(fileNode => {
+                const filePath = fileNode.$?.Path?.trim();
+
+                if (!filePath) {
+                    return [];
+                }
+
+                return [new VivadoFile({
+                    uri: resolveVivadoProjectPath(projectRoot, filePath),
+                    kind: mapFileKind(kind, filePath),
+                    library: fileNode.$?.Library,
+                    filesetName: name,
+                })];
+            }),
         });
     });
 }
