@@ -6,6 +6,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as ext from '../extension';
 import { openVivadoProjectCommandId } from '../commands/vivado/open-project';
+import { runVivadoImplementationCommandId } from '../commands/vivado/run-implementation';
 import { runVivadoSynthesisCommandId } from '../commands/vivado/run-synthesis';
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -132,6 +133,7 @@ suite('Extension activation', () => {
 
         assert.ok(registeredCommands.includes(openVivadoProjectCommandId));
         assert.ok(registeredCommands.includes(runVivadoSynthesisCommandId));
+        assert.ok(registeredCommands.includes(runVivadoImplementationCommandId));
     });
 });
 
