@@ -1,6 +1,7 @@
 # Settings
 
-The current implementation contributes settings under `vitis-hls-ide`. Future Vivado support should add Vivado-specific settings rather than overloading the HLS settings.
+The extension keeps inherited Vitis HLS settings under `vitis-hls-ide` and
+adds Vivado-specific settings under `vscode-vivado`.
 
 ## Current HLS Settings
 
@@ -31,25 +32,46 @@ This path is used for:
 - C++ include path checks.
 - The GDB path used by the C simulation debug launch configuration.
 
-## To-Be Vivado Settings
+## Vivado Settings
 
-Vivado support should add settings similar to:
+## `vscode-vivado.vivadoPath`
 
-### `vscode-vivado.vivadoPath`
+Path to the Vivado installation directory. When
+`vscode-vivado.vivadoExecutablePath` is empty, the extension resolves the
+Vivado executable from this path.
 
-Path to the Vivado installation directory or the directory that contains the `vivado` executable.
-
-Example:
+Default:
 
 ```text
 C:\Xilinx\Vivado\2023.2
 ```
 
-### `vscode-vivado.projectSearchGlobs`
+## `vscode-vivado.vivadoExecutablePath`
+
+Optional full path to the Vivado executable, or a command name available on
+`PATH`.
+
+Default: empty string.
+
+When this setting is empty, the extension derives the executable from
+`vscode-vivado.vivadoPath`, using `bin\vivado.bat` on Windows and `bin/vivado`
+on Linux/macOS.
+
+## `vscode-vivado.vivadoSettingsScript`
+
+Optional path to a Vivado environment setup script, such as `settings64.bat` on
+Windows or `settings64.sh` on Linux.
+
+Default: empty string.
+
+Future Vivado task helpers can use this when Vivado is not already available on
+`PATH`.
+
+## `vscode-vivado.projectSearchGlobs`
 
 Workspace globs used to discover Vivado projects.
 
-Example:
+Default:
 
 ```json
 [
@@ -57,14 +79,22 @@ Example:
 ]
 ```
 
-### `vscode-vivado.tclBatchMode`
-
-Default behavior for commands that run Vivado TCL in batch mode.
-
-### `vscode-vivado.reportsDirectory`
+## `vscode-vivado.reportsDirectory`
 
 Optional workspace-relative directory for generated or copied report artifacts.
 
-### `vscode-vivado.preserveRunLogs`
+Default:
+
+```text
+reports
+```
+
+## `vscode-vivado.preserveRunLogs`
 
 Whether logs from synthesis, implementation, bitstream, and simulation tasks should be kept after task completion.
+
+Default:
+
+```text
+true
+```

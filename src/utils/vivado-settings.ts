@@ -1,0 +1,135 @@
+import path from 'path';
+import * as vscode from 'vscode';
+
+export const vivadoConfigSection = 'vscode-vivado';
+
+const defaultVivadoPath = 'C:\\Xilinx\\Vivado\\2023.2';
+const defaultProjectSearchGlobs = ['**/*.xpr'];
+const defaultReportsDirectory = 'reports';
+
+export interface VivadoSettings {
+    vivadoPath: string;
+    vivadoExecutablePath: string;
+    vivadoSettingsScript: string;
+    projectSearchGlobs: string[];
+    reportsDirectory: string;
+    preserveRunLogs: boolean;
+    resolvedExecutablePath: string;
+    pathEntries: string[];
+}
+
+export interface VivadoSettingsOptions {
+    configuration?: Pick<vscode.WorkspaceConfiguration, 'get'>;
+    platform?: NodeJS.Platform;
+}
+
+export function getVivadoSettings(options: VivadoSettingsOptions = {}): VivadoSettings {
+    const configuration = options.configuration ?? vscode.workspace.getConfiguration(vivadoConfigSection);
+    const platform = options.platform ?? process.platform;
+
+    const vivadoPath = normalizeStringSetting(configuration.get<string>('vivadoPath', defaultVivadoPath));
+    const vivadoExecutablePath = normalizeStringSetting(configuration.get<string>('vivadoExecutablePath', ''));
+    const vivadoSettingsScript = normalizeStringSetting(configuration.get<string>('vivadoSettingsScript', ''));
+    const reportsDirectory = normalizeStringSetting(configuration.get<string>('reportsDirectory', defaultReportsDirectory)) || defaultReportsDirectory;
+    const projectSearchGlobs = normalizeStringArray(
+        configuration.get<string[]>('projectSearchGlobs', defaultProjectSearchGlobs),
+        defaultProjectSearchGlobs
+    );
+    const preserveRunLogs = configuration.get<boolean>('preserveRunLogs', true) !== false;
+
+    return {
+        vivadoPath,
+        vivadoExecutablePath,
+        vivadoSettingsScript,
+        projectSearchGlobs,
+        reportsDirectory,
+        preserveRunLogs,
+        resolvedExecutablePath: resolveVivadoExecutablePath(vivadoExecutablePath, vivadoPath, platform),
+        pathEntries: resolveVivadoPathEntries(vivadoExecutablePath, vivadoPath, platform),
+    };
+}
+
+export function resolveVivadoExecutablePath(
+    vivadoExecutablePath: string | undefined,
+    vivadoPath: string | undefined,
+    platform: NodeJS.Platform = process.platform,
+): string {
+    const explicitExecutable = normalizeStringSetting(vivadoExecutablePath);
+    if (explicitExecutable) {
+        return explicitExecutable;
+    }
+
+    const binPath = resolveVivadoBinPath(vivadoPath, platform);
+    if (binPath) {
+        return getPathApi(platform).join(binPath, getVivadoExecutableName(platform));
+    }
+
+    return getVivadoExecutableName(platform);
+}
+
+export function resolveVivadoBinPath(vivadoPath: string | undefined, platform: NodeJS.Platform = process.platform): string | undefined {
+    const normalizedVivadoPath = normalizeStringSetting(vivadoPath).replace(/[\\/]+$/, '');
+    if (!normalizedVivadoPath) {
+        return undefined;
+    }
+
+    const pathApi = getPathApi(platform);
+    if (pathApi.basename(normalizedVivadoPath).toLowerCase() === 'bin') {
+        return normalizedVivadoPath;
+    }
+
+    return pathApi.join(normalizedVivadoPath, 'bin');
+}
+
+export function getVivadoExecutableName(platform: NodeJS.Platform = process.platform): string {
+    return platform === 'win32' ? 'vivado.bat' : 'vivado';
+}
+
+function resolveVivadoPathEntries(
+    vivadoExecutablePath: string | undefined,
+    vivadoPath: string | undefined,
+    platform: NodeJS.Platform,
+): string[] {
+    const pathApi = getPathApi(platform);
+    const entries: string[] = [];
+    const explicitExecutable = normalizeStringSetting(vivadoExecutablePath);
+
+    if (explicitExecutable && looksLikePath(explicitExecutable, platform)) {
+        const executableDir = pathApi.dirname(explicitExecutable);
+        if (executableDir && executableDir !== '.') {
+            entries.push(executableDir);
+        }
+    }
+
+    const binPath = resolveVivadoBinPath(vivadoPath, platform);
+    if (binPath) {
+        entries.push(binPath);
+    }
+
+    return [...new Set(entries)];
+}
+
+function looksLikePath(value: string, platform: NodeJS.Platform): boolean {
+    return value.includes('/') || value.includes('\\') || getPathApi(platform).isAbsolute(value);
+}
+
+function getPathApi(platform: NodeJS.Platform): path.PlatformPath {
+    return platform === 'win32' ? path.win32 : path.posix;
+}
+
+function normalizeStringSetting(value: string | undefined): string {
+    return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeStringArray(value: unknown, fallback: string[]): string[] {
+    if (!Array.isArray(value)) {
+        return [...fallback];
+    }
+
+    const normalized = value
+        .filter((entry): entry is string => typeof entry === 'string')
+        .map(entry => entry.trim())
+        .filter(entry => entry.length > 0);
+
+    return normalized.length > 0 ? normalized : [...fallback];
+}

@@ -33,7 +33,8 @@ Planned Vivado work is tracked in GitHub issues and milestones. See the
 [Issue Dependency Plan](docs/issue-dependency-plan.md) for the full development
 path. The intended direction is:
 
-- Add `.xpr` activation, Vivado settings, and a reusable `vivadoRun` helper.
+- Build on `.xpr` activation and Vivado settings with a reusable `vivadoRun`
+  helper.
 - Introduce explicit Vivado project models instead of forcing Vivado concepts
   into the inherited HLS model.
 - Render a Vivado project tree for design sources, simulation sources,
@@ -60,9 +61,15 @@ This extension currently contributes these settings. See
 
 - `vitis-hls-ide.vitisPath`: path to the Vitis installation directory.
 - `vitis-hls-ide.hlsPath`: path to the Vitis HLS installation directory.
-
-Vivado path and execution settings are part of the planned Vivado foundation
-work.
+- `vscode-vivado.vivadoPath`: path to the Vivado installation directory.
+- `vscode-vivado.vivadoExecutablePath`: optional Vivado executable path or
+  command name.
+- `vscode-vivado.vivadoSettingsScript`: optional Vivado environment setup
+  script.
+- `vscode-vivado.projectSearchGlobs`: workspace globs for Vivado project
+  discovery.
+- `vscode-vivado.reportsDirectory`: default report artifact directory.
+- `vscode-vivado.preserveRunLogs`: whether Vivado task logs should be kept.
 
 ## Development
 

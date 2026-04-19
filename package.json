@@ -56,6 +56,41 @@
           "type": "string",
           "default": "C:\\Xilinx\\Vitis_HLS\\2023.2",
           "description": "Path to the Vitis HLS installation directory"
+        },
+        "vscode-vivado.vivadoPath": {
+          "type": "string",
+          "default": "C:\\Xilinx\\Vivado\\2023.2",
+          "description": "Path to the Vivado installation directory. When vscode-vivado.vivadoExecutablePath is empty, the extension resolves the Vivado executable from this path."
+        },
+        "vscode-vivado.vivadoExecutablePath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional full path to the Vivado executable, or a command name available on PATH. Leave empty to resolve from vscode-vivado.vivadoPath."
+        },
+        "vscode-vivado.vivadoSettingsScript": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to a Vivado environment setup script such as settings64.bat or settings64.sh."
+        },
+        "vscode-vivado.projectSearchGlobs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "**/*.xpr"
+          ],
+          "description": "Workspace globs used to discover Vivado projects."
+        },
+        "vscode-vivado.reportsDirectory": {
+          "type": "string",
+          "default": "reports",
+          "description": "Workspace-relative directory used for Vivado report artifacts when commands need an explicit report output location."
+        },
+        "vscode-vivado.preserveRunLogs": {
+          "type": "boolean",
+          "default": true,
+          "description": "Keep Vivado task logs after synthesis, implementation, bitstream, and simulation tasks complete."
         }
       }
     },
