@@ -1,4 +1,5 @@
 import { vivadoBitstreamActionDefinition } from './generate-bitstream';
+import { vivadoCleanRunOutputsActionDefinition } from './clean-run-outputs';
 import { VivadoTclActionDefinition } from './run-command';
 import { vivadoImplementationActionDefinition } from './run-implementation';
 import { vivadoResetRunActionDefinition } from './reset-run';
@@ -12,6 +13,7 @@ export const vivadoBuildTclActionDefinitions: readonly VivadoTclActionDefinition
 
 export const vivadoRunMaintenanceTclActionDefinitions: readonly VivadoTclActionDefinition[] = [
     vivadoResetRunActionDefinition,
+    vivadoCleanRunOutputsActionDefinition,
 ];
 
 export const vivadoTclActionDefinitions: readonly VivadoTclActionDefinition[] = [

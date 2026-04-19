@@ -4,6 +4,7 @@
  */
 import * as assert from 'assert';
 import * as vscode from 'vscode';
+import { buildVivadoCleanRunOutputsTcl } from '../../commands/vivado/clean-run-outputs';
 import { buildVivadoBitstreamTcl, vivadoBitstreamActionDefinition } from '../../commands/vivado/generate-bitstream';
 import previewVivadoGeneratedTcl, {
     buildVivadoTclPreviewContent,
@@ -95,10 +96,10 @@ suite('Vivado generated TCL preview action registry', () => {
         );
     });
 
-    test('contains reset after the current build actions in preview order', () => {
+    test('contains run maintenance actions after the current build actions in preview order', () => {
         assert.deepStrictEqual(
             vivadoTclActionDefinitions.map(action => action.title),
-            ['Run Synthesis', 'Run Implementation', 'Generate Bitstream', 'Reset Run'],
+            ['Run Synthesis', 'Run Implementation', 'Generate Bitstream', 'Reset Run', 'Clean Run Outputs'],
         );
     });
 });
@@ -123,17 +124,17 @@ suite('Vivado generated TCL preview action resolution', () => {
 
         assert.deepStrictEqual(
             resolveVivadoTclPreviewActions({ project, run }).map(action => action.definition.title),
-            ['Run Synthesis', 'Reset Run'],
+            ['Run Synthesis', 'Reset Run', 'Clean Run Outputs'],
         );
     });
 
-    test('offers implementation, bitstream, and reset actions for an explicit implementation run target', () => {
+    test('offers implementation, bitstream, and maintenance actions for an explicit implementation run target', () => {
         const project = makeProject();
         const run = project.runs[1];
 
         assert.deepStrictEqual(
             resolveVivadoTclPreviewActions({ project, run }).map(action => action.definition.title),
-            ['Run Implementation', 'Generate Bitstream', 'Reset Run'],
+            ['Run Implementation', 'Generate Bitstream', 'Reset Run', 'Clean Run Outputs'],
         );
     });
 
@@ -234,10 +235,35 @@ suite('previewVivadoGeneratedTcl', () => {
         });
 
         assert.strictEqual(result, true);
-        assert.deepStrictEqual(quickPickLabels, ['Run Synthesis', 'Reset Run']);
+        assert.deepStrictEqual(quickPickLabels, ['Run Synthesis', 'Reset Run', 'Clean Run Outputs']);
         assert.ok(openedContent.includes('# Action: Reset Run'));
         assert.ok(openedContent.includes('# Destructive: Yes'));
         assert.ok(openedContent.endsWith(`${buildVivadoResetRunTcl(project, run)}\n`));
+    });
+
+    test('opens clean run outputs from an explicit run quick pick', async () => {
+        const project = makeProject();
+        const run = project.runs[1];
+        let quickPickLabels: string[] = [];
+        let openedContent = '';
+
+        const result = await previewVivadoGeneratedTcl({ project, run }, {
+            dependencies: makePreviewDependencies({
+                pickTitle: 'Clean Run Outputs',
+                onQuickPick: items => {
+                    quickPickLabels = items.map(item => item.label);
+                },
+                onOpenTextDocument: options => {
+                    openedContent = options.content;
+                },
+            }),
+        });
+
+        assert.strictEqual(result, true);
+        assert.deepStrictEqual(quickPickLabels, ['Run Implementation', 'Generate Bitstream', 'Reset Run', 'Clean Run Outputs']);
+        assert.ok(openedContent.includes('# Action: Clean Run Outputs'));
+        assert.ok(openedContent.includes('# Destructive: Yes'));
+        assert.ok(openedContent.endsWith(`${buildVivadoCleanRunOutputsTcl(project, run)}\n`));
     });
 
     test('opens the only valid action without showing a quick pick', async () => {

@@ -9,6 +9,7 @@ import stopCosim from './commands/project/run/projects-stop-cosim';
 import stopCsim from './commands/project/run/projects-stop-csim';
 import stopCsynth from './commands/project/run/projects-stop-csynth';
 import generateVivadoBitstream, { generateVivadoBitstreamCommandId } from './commands/vivado/generate-bitstream';
+import cleanVivadoRunOutputs, { cleanVivadoRunOutputsCommandId } from './commands/vivado/clean-run-outputs';
 import openVivadoProject, { openVivadoProjectCommandId } from './commands/vivado/open-project';
 import previewVivadoGeneratedTcl, { previewVivadoGeneratedTclCommandId } from './commands/vivado/preview-generated-tcl';
 import resetVivadoRun, { resetVivadoRunCommandId } from './commands/vivado/reset-run';
@@ -50,6 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(openVivadoProjectCommandId, (e?: VivadoProjectTreeItem) => openVivadoProject(e?.project)),
 		vscode.commands.registerCommand(previewVivadoGeneratedTclCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => previewVivadoGeneratedTcl(e)),
 		vscode.commands.registerCommand(resetVivadoRunCommandId, (e?: VivadoRunTreeItem) => resetVivadoRun(e)),
+		vscode.commands.registerCommand(cleanVivadoRunOutputsCommandId, (e?: VivadoRunTreeItem) => cleanVivadoRunOutputs(e)),
 		vscode.commands.registerCommand(runVivadoSynthesisCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoSynthesis(e)),
 		vscode.commands.registerCommand(runVivadoImplementationCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoImplementation(e)),
 		vscode.commands.registerCommand(generateVivadoBitstreamCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => generateVivadoBitstream(e)),
