@@ -75,7 +75,7 @@ is closed or the project owner explicitly accepts the coverage risk.
 | Order | Issue | Dependencies | Notes |
 | --- | --- | --- | --- |
 | 1 | [#10 Add command to open a Vivado project in the GUI](https://github.com/cosgroma/vscode-vivado/issues/10) | #4, #8 | First user-facing Vivado command; validates executable and project path handling. |
-| 2 | [#11 Add synthesis, implementation, and bitstream run commands](https://github.com/cosgroma/vscode-vivado/issues/11) | #5, #6, #8, #9 | Main project-mode build flow. |
+| 2 | [#11 Add synthesis, implementation, and bitstream run commands](https://github.com/cosgroma/vscode-vivado/issues/11) | #5, #6, #8, #9 | Main project-mode build flow. Design first, then split into synthesis, implementation, and bitstream command slices. |
 | 3 | [#12 Add reset, clean, and generated TCL preview commands](https://github.com/cosgroma/vscode-vivado/issues/12) | #6, #11 | Adds safe maintenance operations once primary run commands exist. |
 
 ### v0.6.0 Diagnostics, Reports, And XSim
