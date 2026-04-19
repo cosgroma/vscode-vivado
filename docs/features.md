@@ -153,6 +153,16 @@ Before deleting anything, the generated TCL reads the run `DIRECTORY` property,
 normalizes it, rejects empty paths, rejects the project root, and rejects paths
 outside the project root.
 
+### Vivado Diagnostics
+
+Vivado tasks use a contributed problem matcher for file-backed `ERROR`,
+`WARNING`, `CRITICAL WARNING`, and `INFO` messages that end with
+`[file:line]` or `[file:line:column]`. Matching messages appear in Problems and
+link back to the emitted file location.
+
+Messages without usable file and line data remain in the task terminal and
+generated logs so they can still be searched and copied.
+
 ## Planned Vivado Features
 
 The extension should grow from HLS project management into Vivado project support. The desired Vivado features are listed here as the product target.
@@ -183,9 +193,10 @@ Expose common Vivado runs as VS Code commands and tasks:
 
 The extension should use Vivado TCL under the hood so every action can be reproduced outside VS Code.
 
-### Diagnostics
+### Report Diagnostics
 
-Parse Vivado messages from task output and report files. Diagnostics should link warnings and errors back to source files where possible.
+Parse Vivado report files and richer run artifacts into diagnostics and
+summaries after task-output matching is complete.
 
 ### TCL Workflow
 

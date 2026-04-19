@@ -33,6 +33,8 @@ for the current user-facing workflows.
 - Open a project in the Vivado IDE.
 - Run synthesis, implementation, and bitstream generation as TCL-backed VS Code
   tasks.
+- Surface file-backed Vivado task diagnostics in Problems when Vivado emits
+  file and line locations.
 - Preview generated TCL without executing Vivado.
 - Reset selected synthesis or implementation runs.
 - Clean generated outputs for selected synthesis or implementation runs.
@@ -51,7 +53,7 @@ path. The intended direction is:
 - Render a Vivado project tree for design sources, simulation sources,
   constraints, runs, reports, IP, block designs, TCL scripts, and hardware.
 - Run Vivado tasks through visible, reproducible TCL.
-- Surface Vivado diagnostics and report summaries inside VS Code.
+- Extend Vivado diagnostics and report summaries inside VS Code.
 - Add XSim, IP, block design, and hardware manager workflows after the project
   foundation is reliable.
 

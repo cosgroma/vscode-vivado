@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { vivadoTaskSource } from '../../constants';
+import { vivadoProblemMatcher, vivadoTaskSource } from '../../constants';
 import { VivadoSettings } from '../../utils/vivado-settings';
 import {
     buildVivadoCommandLine,
@@ -240,6 +240,49 @@ suite('vivadoRun task execution', () => {
 
         assert.strictEqual(getTask()?.name, 'custom-vivado-task');
         assert.strictEqual(getTask()?.source, vivadoTaskSource);
+    });
+
+    test('uses the Vivado problem matcher by default', async () => {
+        const { cleanup, getTask } = stubVivadoRunTasks(0);
+
+        try {
+            await vivadoRun(
+                vscode.Uri.file('/workspace'),
+                'exit',
+                'problem-matcher-default',
+                {
+                    settings: makeSettings(),
+                    platform: 'win32',
+                    tclDirectory: makeTclDirectory(),
+                },
+            );
+        } finally {
+            cleanup();
+        }
+
+        assert.deepStrictEqual(getTask()?.problemMatchers, [vivadoProblemMatcher]);
+    });
+
+    test('allows callers to override Vivado problem matchers', async () => {
+        const { cleanup, getTask } = stubVivadoRunTasks(0);
+
+        try {
+            await vivadoRun(
+                vscode.Uri.file('/workspace'),
+                'exit',
+                'problem-matcher-override',
+                {
+                    settings: makeSettings(),
+                    platform: 'win32',
+                    problemMatchers: [],
+                    tclDirectory: makeTclDirectory(),
+                },
+            );
+        } finally {
+            cleanup();
+        }
+
+        assert.deepStrictEqual(getTask()?.problemMatchers, []);
     });
 
     test('resolves with the task exit code', async () => {

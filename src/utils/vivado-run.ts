@@ -1,6 +1,6 @@
 import fs from 'fs';
 import * as vscode from 'vscode';
-import { vivadoTaskSource } from '../constants';
+import { vivadoProblemMatcher, vivadoTaskSource } from '../constants';
 import { OutputConsole } from '../output-console';
 import { getVivadoSettings, VivadoSettings } from './vivado-settings';
 import {
@@ -166,13 +166,14 @@ function buildVivadoTask(
         },
     );
 
+    const problemMatchers = options.problemMatchers ?? [vivadoProblemMatcher];
     const task = new vscode.Task(
         { type: 'shell' },
         vscode.TaskScope.Workspace,
         taskName,
         vivadoTaskSource,
         shellExecution,
-        options.problemMatchers,
+        problemMatchers,
     );
 
     if (options.presentationOptions !== undefined) {
