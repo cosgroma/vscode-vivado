@@ -7,15 +7,28 @@ import { VivadoFileset, VivadoFilesetKind } from '../models/vivado-fileset';
 import { VivadoIp } from '../models/vivado-ip';
 import { VivadoProject } from '../models/vivado-project';
 import { VivadoRun, VivadoRunStatus, VivadoRunType } from '../models/vivado-run';
+import { discoverVivadoReports } from './vivado-reports';
 
 interface XmlNode {
     $?: Record<string, string | undefined>;
     [key: string]: unknown;
 }
 
-export async function loadVivadoProjectFromXpr(xprFile: vscode.Uri): Promise<VivadoProject> {
+export interface LoadVivadoProjectOptions {
+    reportsDirectory?: string;
+}
+
+export async function loadVivadoProjectFromXpr(
+    xprFile: vscode.Uri,
+    options: LoadVivadoProjectOptions = {},
+): Promise<VivadoProject> {
     const data = await vscode.workspace.fs.readFile(xprFile);
-    return parseVivadoProjectXml(Buffer.from(data).toString(), xprFile);
+    const project = await parseVivadoProjectXml(Buffer.from(data).toString(), xprFile);
+    project.reports = await discoverVivadoReports(project, {
+        reportsDirectory: options.reportsDirectory,
+    });
+
+    return project;
 }
 
 export async function parseVivadoProjectXml(xml: string, xprFile: vscode.Uri): Promise<VivadoProject> {

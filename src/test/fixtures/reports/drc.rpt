@@ -1,0 +1,5 @@
+Report DRC
+
+ERROR: [DRC NSTD-1] Unspecified I/O Standard.
+CRITICAL WARNING: [DRC UCIO-1] Unconstrained Logical Port.
+WARNING: [DRC RTSTAT-1] Routethrough status warning.

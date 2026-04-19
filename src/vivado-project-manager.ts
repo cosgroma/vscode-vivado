@@ -10,7 +10,7 @@ type VivadoProjectManagerEvents = { 'projectsChanged': [] };
 export interface VivadoProjectManagerDependencies {
     findFiles: (include: vscode.GlobPattern, exclude?: vscode.GlobPattern, maxResults?: number) => Thenable<vscode.Uri[]>;
     getSettings: () => VivadoSettings;
-    loadProject: (xprFile: vscode.Uri) => Promise<VivadoProject>;
+    loadProject: (xprFile: vscode.Uri, settings: VivadoSettings) => Promise<VivadoProject>;
     appendLine: (message: string) => void;
 }
 
@@ -29,7 +29,9 @@ export default class VivadoProjectManager extends EventEmitter<VivadoProjectMana
         this.dependencies = {
             findFiles: vscode.workspace.findFiles.bind(vscode.workspace),
             getSettings: getVivadoSettings,
-            loadProject: loadVivadoProjectFromXpr,
+            loadProject: (xprFile, settings) => loadVivadoProjectFromXpr(xprFile, {
+                reportsDirectory: settings.reportsDirectory,
+            }),
             appendLine: message => OutputConsole.instance.appendLine(message),
             ...dependencies,
         };
@@ -100,7 +102,7 @@ export default class VivadoProjectManager extends EventEmitter<VivadoProjectMana
 
         await Promise.all(projectFiles.map(async file => {
             try {
-                projects.push(await this.dependencies.loadProject(file));
+                projects.push(await this.dependencies.loadProject(file, settings));
             } catch (error) {
                 const message = error instanceof Error ? error.message : String(error);
                 this.dependencies.appendLine('Error loading Vivado project: ' + message);

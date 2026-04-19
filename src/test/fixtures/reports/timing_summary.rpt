@@ -1,0 +1,7 @@
+Timing Summary
+
+| WNS(ns) | TNS(ns) | TNS Failing Endpoints |
+|---------|---------|-----------------------|
+|  -0.123 |  -1.234 |                     5 |
+
+Failing Clocks: sys_clk

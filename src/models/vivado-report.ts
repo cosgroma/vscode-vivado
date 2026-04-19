@@ -5,7 +5,13 @@ export enum VivadoReportKind {
     Utilization = 'utilization',
     Power = 'power',
     Drc = 'drc',
+    Methodology = 'methodology',
     Other = 'other',
+}
+
+export interface VivadoReportSummary {
+    description: string;
+    details?: string[];
 }
 
 export interface VivadoReportOptions {
@@ -13,6 +19,7 @@ export interface VivadoReportOptions {
     uri: vscode.Uri;
     kind: VivadoReportKind;
     runName?: string;
+    summary?: VivadoReportSummary;
 }
 
 export class VivadoReport {
@@ -20,11 +27,13 @@ export class VivadoReport {
     public uri: vscode.Uri;
     public kind: VivadoReportKind;
     public runName?: string;
+    public summary?: VivadoReportSummary;
 
     constructor(options: VivadoReportOptions) {
         this.name = options.name;
         this.uri = options.uri;
         this.kind = options.kind;
         this.runName = options.runName;
+        this.summary = options.summary;
     }
 }

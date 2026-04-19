@@ -146,6 +146,26 @@ suite('VivadoProjectManager', () => {
         assert.strictEqual(projects[0].name, 'no-vivado');
     });
 
+    test('passes configured report directory settings to the project loader', async () => {
+        const xprFile = vscode.Uri.file(path.join('/workspace', 'reports-demo', 'reports-demo.xpr'));
+        let receivedSettings: VivadoSettings | undefined;
+        const { manager } = makeManager({
+            getSettings: () => makeSettings({
+                reportsDirectory: 'vivado-reports',
+            }),
+            findFiles: () => Promise.resolve([xprFile]),
+            loadProject: async (file, settings) => {
+                receivedSettings = settings;
+                return makeProject(file);
+            },
+        });
+
+        manager.refresh();
+        await manager.getProjects();
+
+        assert.strictEqual(receivedSettings?.reportsDirectory, 'vivado-reports');
+    });
+
     test('replaces stale project entries on refresh', async () => {
         const firstProject = vscode.Uri.file(path.join('/workspace', 'first', 'first.xpr'));
         const secondProject = vscode.Uri.file(path.join('/workspace', 'second', 'second.xpr'));

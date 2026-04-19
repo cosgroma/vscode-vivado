@@ -1,0 +1,4 @@
+Report Methodology
+
+CRITICAL WARNING: [Methodology 23-20] Clock net has no buffer.
+WARNING: [Methodology 23-1] Review generated clock constraints.

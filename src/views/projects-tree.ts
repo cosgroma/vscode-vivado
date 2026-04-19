@@ -259,7 +259,8 @@ export class VivadoReportTreeItem extends TreeItem {
         super(report.name);
         this.report = report;
         this.contextValue = 'vivadoReportItem';
-        this.description = report.runName ?? report.kind;
+        this.description = report.summary?.description ?? report.runName ?? report.kind;
+        this.tooltip = buildReportTooltip(report);
         this.resourceUri = report.uri;
         this.iconPath = new vscode.ThemeIcon('graph');
         this.command = {
@@ -268,6 +269,17 @@ export class VivadoReportTreeItem extends TreeItem {
             arguments: [report.uri],
         };
     }
+}
+
+function buildReportTooltip(report: VivadoReport): string {
+    return [
+        `Report: ${report.name}`,
+        `Kind: ${report.kind}`,
+        report.runName ? `Run: ${report.runName}` : undefined,
+        report.summary?.description ? `Summary: ${report.summary.description}` : undefined,
+        ...(report.summary?.details ?? []),
+        report.uri.fsPath,
+    ].filter((line): line is string => line !== undefined).join('\n');
 }
 
 export class ProjectFileItem extends TreeItem {
