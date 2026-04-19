@@ -14,6 +14,7 @@ export interface RunVivadoCommandDependencies {
     vivadoRun: (startPath: vscode.Uri, tcl: string, taskName: string, options?: VivadoRunOptions) => Promise<number | undefined>;
     showErrorMessage: (message: string) => Thenable<string | undefined>;
     showInformationMessage: (message: string) => Thenable<string | undefined>;
+    showWarningMessage: (message: string, options: vscode.MessageOptions, ...items: string[]) => Thenable<string | undefined>;
     getTaskExecutions: () => readonly vscode.TaskExecution[];
     refreshVivadoProjects: () => void | Promise<void>;
 }
@@ -33,15 +34,23 @@ export interface VivadoTclActionDefinition {
     actionName: string;
     taskActionName: string;
     runType: VivadoRunType;
+    runTypes?: readonly VivadoRunType[];
     runDescription?: string;
     defaultRunName: string;
     supportsProjectTarget: boolean;
     supportsRunTarget: boolean;
     destructive?: boolean;
+    confirmation?: (project: VivadoProject, run: VivadoRun) => VivadoRunCommandConfirmation;
     buildTcl: (project: VivadoProject, run: VivadoRun) => string;
 }
 
 export type VivadoRunCommandDefinition = VivadoTclActionDefinition;
+
+export interface VivadoRunCommandConfirmation {
+    message: string;
+    confirmLabel: string;
+    detail?: string;
+}
 
 export async function runVivadoProjectCommand(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
@@ -53,6 +62,19 @@ export async function runVivadoProjectCommand(
     try {
         const { project, run } = resolveVivadoRunTarget(target, definition);
         ensureNoActiveVivadoTask(dependencies.getTaskExecutions(), definition.actionName);
+
+        const confirmation = definition.confirmation?.(project, run);
+        if (confirmation) {
+            const selection = await dependencies.showWarningMessage(
+                confirmation.message,
+                { modal: true, detail: confirmation.detail },
+                confirmation.confirmLabel,
+            );
+
+            if (selection !== confirmation.confirmLabel) {
+                return false;
+            }
+        }
 
         const taskName = buildVivadoRunTaskName(definition.taskActionName, project, run);
         const exitCode = await dependencies.vivadoRun(
@@ -94,7 +116,7 @@ export async function runVivadoProjectCommand(
 
 export function resolveVivadoRunTarget(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
-    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'runDescription' | 'defaultRunName' | 'supportsProjectTarget' | 'supportsRunTarget'>,
+    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'runTypes' | 'runDescription' | 'defaultRunName' | 'supportsProjectTarget' | 'supportsRunTarget'>,
 ): ResolvedVivadoRunCommand {
     const runDescription = getRunDescription(definition);
 
@@ -140,9 +162,13 @@ export function resolveVivadoRunTarget(
         };
     }
 
-    if (!definition.supportsRunTarget || !(target.run instanceof VivadoRun) || target.run.type !== definition.runType) {
+    if (!definition.supportsRunTarget || !(target.run instanceof VivadoRun) || !supportsRunType(definition, target.run.type)) {
+        const targetDescription = definition.supportsProjectTarget
+            ? `${articleFor(runDescription)} ${runDescription} run or Vivado project`
+            : `${articleFor(runDescription)} ${runDescription} run`;
+
         throw new Error(
-            `Select ${articleFor(runDescription)} ${runDescription} run or Vivado project ` +
+            `Select ${targetDescription} ` +
             `before running ${definition.actionName}.`,
         );
     }
@@ -155,6 +181,13 @@ export function resolveVivadoRunTarget(
 
 export function buildVivadoRunTaskName(taskActionName: string, project: VivadoProject, run: VivadoRun): string {
     return `Vivado: ${taskActionName} ${project.name}/${run.name}`;
+}
+
+function supportsRunType(
+    definition: Pick<VivadoRunCommandDefinition, 'runType' | 'runTypes'>,
+    runType: VivadoRunType,
+): boolean {
+    return (definition.runTypes ?? [definition.runType]).includes(runType);
 }
 
 function chooseDefaultRun(
@@ -192,6 +225,7 @@ function resolveDependencies(dependencies: Partial<RunVivadoCommandDependencies>
         vivadoRun,
         showErrorMessage: message => vscode.window.showErrorMessage(message),
         showInformationMessage: message => vscode.window.showInformationMessage(message),
+        showWarningMessage: (message, options, ...items) => vscode.window.showWarningMessage(message, options, ...items),
         getTaskExecutions: () => vscode.tasks.taskExecutions,
         refreshVivadoProjects: () => VivadoProjectManager.instance.refresh(),
         ...dependencies,

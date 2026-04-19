@@ -1,10 +1,20 @@
 import { vivadoBitstreamActionDefinition } from './generate-bitstream';
 import { VivadoTclActionDefinition } from './run-command';
 import { vivadoImplementationActionDefinition } from './run-implementation';
+import { vivadoResetRunActionDefinition } from './reset-run';
 import { vivadoSynthesisActionDefinition } from './run-synthesis';
 
 export const vivadoBuildTclActionDefinitions: readonly VivadoTclActionDefinition[] = [
     vivadoSynthesisActionDefinition,
     vivadoImplementationActionDefinition,
     vivadoBitstreamActionDefinition,
+];
+
+export const vivadoRunMaintenanceTclActionDefinitions: readonly VivadoTclActionDefinition[] = [
+    vivadoResetRunActionDefinition,
+];
+
+export const vivadoTclActionDefinitions: readonly VivadoTclActionDefinition[] = [
+    ...vivadoBuildTclActionDefinitions,
+    ...vivadoRunMaintenanceTclActionDefinitions,
 ];

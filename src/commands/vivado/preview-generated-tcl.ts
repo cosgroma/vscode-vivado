@@ -7,7 +7,7 @@ import {
     VivadoRunCommandTarget,
     VivadoTclActionDefinition,
 } from './run-command';
-import { vivadoBuildTclActionDefinitions } from './tcl-actions';
+import { vivadoTclActionDefinitions } from './tcl-actions';
 
 const commandId = 'vscode-vivado.projects.previewGeneratedTcl';
 
@@ -66,7 +66,7 @@ export default async function previewVivadoGeneratedTcl(
 
 export function resolveVivadoTclPreviewActions(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
-    actionDefinitions: readonly VivadoTclActionDefinition[] = vivadoBuildTclActionDefinitions,
+    actionDefinitions: readonly VivadoTclActionDefinition[] = vivadoTclActionDefinitions,
 ): ResolvedVivadoTclPreviewAction[] {
     if (!target) {
         throw new Error('Select a Vivado project or run in the Projects view before previewing generated TCL.');
