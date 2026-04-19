@@ -89,6 +89,21 @@ Default:
 reports
 ```
 
+## `vscode-vivado.generatedTclDirectory`
+
+Workspace-relative directory for generated Vivado TCL scripts. Absolute paths
+are also supported.
+
+Default:
+
+```text
+.vscode-vivado/tcl
+```
+
+Extension-driven Vivado actions write the exact TCL they execute into this
+directory. Generated scripts include a short header with the task name, working
+directory, and copyable rerun command.
+
 ## `vscode-vivado.preserveRunLogs`
 
 Whether logs from synthesis, implementation, bitstream, and simulation tasks should be kept after task completion.

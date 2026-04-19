@@ -36,6 +36,7 @@ suite('Vivado settings contribution', () => {
         assert.ok(properties[`${vivadoConfigSection}.vivadoSettingsScript`]);
         assert.ok(properties[`${vivadoConfigSection}.projectSearchGlobs`]);
         assert.ok(properties[`${vivadoConfigSection}.reportsDirectory`]);
+        assert.ok(properties[`${vivadoConfigSection}.generatedTclDirectory`]);
         assert.ok(properties[`${vivadoConfigSection}.preserveRunLogs`]);
     });
 });
@@ -54,6 +55,7 @@ suite('Vivado settings resolution', () => {
         );
         assert.deepStrictEqual(settings.projectSearchGlobs, ['**/*.xpr']);
         assert.strictEqual(settings.reportsDirectory, 'reports');
+        assert.strictEqual(settings.generatedTclDirectory, '.vscode-vivado/tcl');
         assert.strictEqual(settings.preserveRunLogs, true);
     });
 
@@ -96,6 +98,7 @@ suite('Vivado settings resolution', () => {
                 vivadoSettingsScript: ' /tools/vivado/settings64.sh ',
                 projectSearchGlobs: [' **/*.xpr ', '', '   ', '**/*.bd'],
                 reportsDirectory: ' vivado-reports ',
+                generatedTclDirectory: ' generated/tcl ',
                 preserveRunLogs: false,
             }),
             platform: 'linux',
@@ -105,6 +108,7 @@ suite('Vivado settings resolution', () => {
         assert.strictEqual(settings.vivadoSettingsScript, '/tools/vivado/settings64.sh');
         assert.deepStrictEqual(settings.projectSearchGlobs, ['**/*.xpr', '**/*.bd']);
         assert.strictEqual(settings.reportsDirectory, 'vivado-reports');
+        assert.strictEqual(settings.generatedTclDirectory, 'generated/tcl');
         assert.strictEqual(settings.preserveRunLogs, false);
     });
 
