@@ -69,6 +69,8 @@ This extension currently contributes these settings. See
 - `vscode-vivado.projectSearchGlobs`: workspace globs for Vivado project
   discovery.
 - `vscode-vivado.reportsDirectory`: default report artifact directory.
+- `vscode-vivado.generatedTclDirectory`: default generated TCL script
+  directory.
 - `vscode-vivado.preserveRunLogs`: whether Vivado task logs should be kept.
 
 ## Development

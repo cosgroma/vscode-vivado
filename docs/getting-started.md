@@ -51,6 +51,7 @@ Open VS Code settings and configure:
 - `vscode-vivado.vivadoPath`
 - `vscode-vivado.vivadoExecutablePath`
 - `vscode-vivado.vivadoSettingsScript`
+- `vscode-vivado.generatedTclDirectory`
 
 The default Windows paths are:
 
@@ -62,6 +63,10 @@ C:\Xilinx\Vivado\2023.2
 
 The Vivado executable setting can be a full path or a command name such as
 `vivado` when the command is already available on `PATH`.
+
+Generated Vivado TCL scripts are written to `.vscode-vivado/tcl` by default.
+Each script includes the task name, working directory, and the command needed to
+rerun the same script manually from a terminal or CI job.
 
 ## C++ Include Path
 

@@ -6,6 +6,7 @@ export const vivadoConfigSection = 'vscode-vivado';
 const defaultVivadoPath = 'C:\\Xilinx\\Vivado\\2023.2';
 const defaultProjectSearchGlobs = ['**/*.xpr'];
 const defaultReportsDirectory = 'reports';
+const defaultGeneratedTclDirectory = '.vscode-vivado/tcl';
 
 export interface VivadoSettings {
     vivadoPath: string;
@@ -13,6 +14,7 @@ export interface VivadoSettings {
     vivadoSettingsScript: string;
     projectSearchGlobs: string[];
     reportsDirectory: string;
+    generatedTclDirectory: string;
     preserveRunLogs: boolean;
     resolvedExecutablePath: string;
     pathEntries: string[];
@@ -31,6 +33,7 @@ export function getVivadoSettings(options: VivadoSettingsOptions = {}): VivadoSe
     const vivadoExecutablePath = normalizeStringSetting(configuration.get<string>('vivadoExecutablePath', ''));
     const vivadoSettingsScript = normalizeStringSetting(configuration.get<string>('vivadoSettingsScript', ''));
     const reportsDirectory = normalizeStringSetting(configuration.get<string>('reportsDirectory', defaultReportsDirectory)) || defaultReportsDirectory;
+    const generatedTclDirectory = normalizeStringSetting(configuration.get<string>('generatedTclDirectory', defaultGeneratedTclDirectory)) || defaultGeneratedTclDirectory;
     const projectSearchGlobs = normalizeStringArray(
         configuration.get<string[]>('projectSearchGlobs', defaultProjectSearchGlobs),
         defaultProjectSearchGlobs
@@ -43,6 +46,7 @@ export function getVivadoSettings(options: VivadoSettingsOptions = {}): VivadoSe
         vivadoSettingsScript,
         projectSearchGlobs,
         reportsDirectory,
+        generatedTclDirectory,
         preserveRunLogs,
         resolvedExecutablePath: resolveVivadoExecutablePath(vivadoExecutablePath, vivadoPath, platform),
         pathEntries: resolveVivadoPathEntries(vivadoExecutablePath, vivadoPath, platform),

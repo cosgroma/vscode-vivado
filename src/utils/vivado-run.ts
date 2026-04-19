@@ -1,9 +1,13 @@
 import fs from 'fs';
-import os from 'os';
-import path from 'path';
 import * as vscode from 'vscode';
 import { vivadoTaskSource } from '../constants';
+import { OutputConsole } from '../output-console';
 import { getVivadoSettings, VivadoSettings } from './vivado-settings';
+import {
+    buildVivadoTclFileUri,
+    resolveVivadoTclDirectory,
+    writeVisibleVivadoTclScript,
+} from './vivado-tcl';
 
 export interface VivadoRunOptions {
     settings?: VivadoSettings;
@@ -12,6 +16,7 @@ export interface VivadoRunOptions {
     preserveTclFile?: boolean;
     tclDirectory?: vscode.Uri;
     platform?: NodeJS.Platform;
+    now?: Date;
 }
 
 export async function vivadoRun(
@@ -20,17 +25,34 @@ export async function vivadoRun(
     taskName: string,
     options: VivadoRunOptions = {},
 ): Promise<number | undefined> {
-    const tclFilePath = writeTclFile(tcl, options.tclDirectory);
+    const platform = options.platform ?? process.platform;
+    const settings = options.settings ?? getVivadoSettings({ platform });
+    const now = options.now ?? new Date();
+    const tclDirectory = options.tclDirectory ?? resolveVivadoTclDirectory(startPath, settings);
+    const tclFile = buildVivadoTclFileUri(tclDirectory, taskName, now);
+    const rerunCommand = buildVivadoCommandLine(settings, tclFile.fsPath, platform);
+
+    writeVisibleVivadoTclScript({
+        startPath,
+        taskName,
+        tcl,
+        settings,
+        rerunCommand,
+        tclDirectory,
+        uri: tclFile,
+        now,
+    });
 
     return vivadoRunScript(
         startPath,
-        vscode.Uri.file(tclFilePath),
+        tclFile,
         taskName,
         {
             ...options,
-            preserveTclFile: options.preserveTclFile ?? false,
+            settings,
+            preserveTclFile: options.preserveTclFile ?? true,
         },
-        options.preserveTclFile ? undefined : tclFilePath,
+        options.preserveTclFile === false ? tclFile.fsPath : undefined,
     );
 }
 
@@ -44,6 +66,10 @@ export async function vivadoRunScript(
     const platform = options.platform ?? process.platform;
     const settings = options.settings ?? getVivadoSettings({ platform });
     const task = buildVivadoTask(startPath, tclFile, taskName, settings, options, platform);
+    const commandLine = buildVivadoCommandLine(settings, tclFile.fsPath, platform);
+
+    OutputConsole.instance.appendLine(`Vivado TCL script: ${tclFile.fsPath}`);
+    OutputConsole.instance.appendLine(`Rerun Vivado TCL: ${commandLine}`);
 
     let disposable: vscode.Disposable | undefined;
     const exitCode = new Promise<number | undefined>((resolve) => {
@@ -150,17 +176,6 @@ function buildVivadoTask(
     }
 
     return task;
-}
-
-function writeTclFile(tcl: string, directory?: vscode.Uri): string {
-    const targetDirectory = directory?.fsPath ?? os.tmpdir();
-    fs.mkdirSync(targetDirectory, { recursive: true });
-
-    const fileName = `vscode-vivado-tcl-${Date.now()}.tcl`;
-    const tclFilePath = path.join(targetDirectory, fileName);
-    fs.writeFileSync(tclFilePath, tcl);
-
-    return tclFilePath;
 }
 
 function cleanupTclFile(tclFilePath: string | undefined): void {

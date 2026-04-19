@@ -87,6 +87,11 @@
           "default": "reports",
           "description": "Workspace-relative directory used for Vivado report artifacts when commands need an explicit report output location."
         },
+        "vscode-vivado.generatedTclDirectory": {
+          "type": "string",
+          "default": ".vscode-vivado/tcl",
+          "description": "Workspace-relative directory used for generated Vivado TCL scripts. Absolute paths are also supported."
+        },
         "vscode-vivado.preserveRunLogs": {
           "type": "boolean",
           "default": true,
