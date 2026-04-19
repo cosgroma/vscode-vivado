@@ -1,0 +1,7 @@
+INFO: [Vivado 12-4895] Creating project [/workspace/scripts/create_project.tcl:5]
+WARNING: [Synth 8-3331] design top has unconnected port [/workspace/src/top.sv:42]
+ERROR: [Place 30-574] Poor placement for routing between an IO pin and BUFG. [C:/work/fpga/constraints.xdc:17]
+CRITICAL WARNING: [Route 35-39] The design did not meet timing [/home/me/fpga/top.xdc:21:7]
+ERROR: [Timing 38-282] The design failed timing. [/workspace/reports/timing.rpt:103]
+ERROR: [DRC NSTD-1] Unspecified I/O Standard: 1 out of 1 logical ports use I/O standard Default.
+ERROR: [Vivado 12-1411] Cannot set LOC property of ports [led].
