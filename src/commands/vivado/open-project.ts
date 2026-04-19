@@ -50,6 +50,8 @@ export interface OpenVivadoProjectOptions {
     dependencies?: Partial<OpenVivadoProjectDependencies>;
 }
 
+type PathApi = typeof path.posix;
+
 export default async function openVivadoProject(
     project: VivadoProject | undefined,
     options: OpenVivadoProjectOptions = {},
@@ -291,7 +293,7 @@ function looksLikePath(value: string, platform: NodeJS.Platform): boolean {
     return value.includes('/') || value.includes('\\') || getPathApi(platform).isAbsolute(value);
 }
 
-function getPathApi(platform: NodeJS.Platform): path.PlatformPath {
+function getPathApi(platform: NodeJS.Platform): PathApi {
     return platform === 'win32' ? path.win32 : path.posix;
 }
 

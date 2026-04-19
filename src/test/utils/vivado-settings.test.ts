@@ -26,7 +26,6 @@ function fakeConfiguration(values: Record<string, unknown>): Pick<vscode.Workspa
 
 suite('Vivado settings contribution', () => {
     test('package.json contributes the Vivado configuration section and keys', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pkg = require('../../../package.json');
         const properties = pkg.contributes.configuration.properties;
 

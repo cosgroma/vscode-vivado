@@ -244,7 +244,6 @@ suite('generateVivadoBitstream', () => {
 
 suite('Vivado bitstream package contribution', () => {
     test('contributes Generate Bitstream to project and implementation run tree items', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pkg = require('../../../package.json');
         const command = pkg.contributes.commands.find((entry: { command: string }) => entry.command === generateVivadoBitstreamCommandId);
         const paletteEntry = pkg.contributes.menus.commandPalette.find((entry: { command: string }) => entry.command === generateVivadoBitstreamCommandId);

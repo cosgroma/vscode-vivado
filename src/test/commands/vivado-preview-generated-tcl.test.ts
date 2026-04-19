@@ -347,7 +347,6 @@ suite('previewVivadoGeneratedTcl', () => {
 
 suite('Vivado generated TCL preview package contribution', () => {
     test('contributes Preview Generated TCL only to supported Vivado tree items', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pkg = require('../../../package.json');
         const command = pkg.contributes.commands.find((entry: { command: string }) => entry.command === previewVivadoGeneratedTclCommandId);
         const paletteEntry = pkg.contributes.menus.commandPalette.find((entry: { command: string }) => entry.command === previewVivadoGeneratedTclCommandId);
