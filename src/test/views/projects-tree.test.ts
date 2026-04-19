@@ -373,6 +373,24 @@ suite('ProjectsViewTreeProvider', () => {
         assert.strictEqual(reports[0].command?.command, 'vscode.open');
     });
 
+    test('Vivado report nodes display available summaries', () => {
+        const report = new VivadoReport({
+            name: 'timing_summary.rpt',
+            uri: vscode.Uri.file('/workspace/board/reports/timing_summary.rpt'),
+            kind: VivadoReportKind.Timing,
+            runName: 'impl_1',
+            summary: {
+                description: 'WNS -0.123 ns, TNS -1.234 ns',
+                details: ['Worst negative slack: -0.123 ns'],
+            },
+        });
+        const item = new VivadoReportTreeItem(report);
+
+        assert.strictEqual(item.description, 'WNS -0.123 ns, TNS -1.234 ns');
+        assert.ok(String(item.tooltip).includes('Run: impl_1'));
+        assert.ok(String(item.tooltip).includes('Worst negative slack: -0.123 ns'));
+    });
+
     test('Vivado project and category nodes stay stable across refreshes', async () => {
         vivadoProjectsProvider.projects = [makeVivadoProject('board', {
             designSources: ['rtl/old_top.sv'],

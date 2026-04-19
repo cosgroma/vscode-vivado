@@ -1,0 +1,8 @@
+Utilization Summary
+
+| Site Type       | Used | Fixed | Available | Util% |
+|-----------------|------|-------|-----------|-------|
+| Slice LUTs      | 1234 |     0 |     20800 |  5.93 |
+| Slice Registers | 5678 |     0 |     41600 | 13.65 |
+| Block RAM Tile  |   10 |     0 |        50 | 20.00 |
+| DSPs            |    4 |     0 |        90 |  4.44 |

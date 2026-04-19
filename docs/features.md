@@ -163,6 +163,18 @@ link back to the emitted file location.
 Messages without usable file and line data remain in the task terminal and
 generated logs so they can still be searched and copied.
 
+### Vivado Report Summaries
+
+The Reports tree links discovered `.rpt` files from the configured
+`vscode-vivado.reportsDirectory` location and from Vivado run output
+directories such as `<project>.runs/<run>`. Report nodes open the raw report
+file.
+
+Timing, utilization, DRC, methodology, and power reports show best-effort
+summaries when the extension can parse common Vivado report text. Missing
+reports or unrecognized report formats leave the report node openable without a
+summary instead of breaking the tree.
+
 ## Planned Vivado Features
 
 The extension should grow from HLS project management into Vivado project support. The desired Vivado features are listed here as the product target.
@@ -193,10 +205,11 @@ Expose common Vivado runs as VS Code commands and tasks:
 
 The extension should use Vivado TCL under the hood so every action can be reproduced outside VS Code.
 
-### Report Diagnostics
+### Generated Report Workflows
 
-Parse Vivado report files and richer run artifacts into diagnostics and
-summaries after task-output matching is complete.
+Add commands for generating timing, utilization, DRC, methodology, and power
+reports directly from VS Code, and extend parser coverage for richer report
+diagnostics.
 
 ### TCL Workflow
 

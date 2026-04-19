@@ -35,6 +35,8 @@ for the current user-facing workflows.
   tasks.
 - Surface file-backed Vivado task diagnostics in Problems when Vivado emits
   file and line locations.
+- Surface timing, utilization, DRC, methodology, and power report files with
+  best-effort summaries in the project tree.
 - Preview generated TCL without executing Vivado.
 - Reset selected synthesis or implementation runs.
 - Clean generated outputs for selected synthesis or implementation runs.

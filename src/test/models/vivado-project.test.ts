@@ -98,6 +98,10 @@ function makeProject(): VivadoProject {
                 uri: uri(path.join('/workspace', 'board-design', 'reports', 'timing_summary.rpt')),
                 kind: VivadoReportKind.Timing,
                 runName: 'impl_1',
+                summary: {
+                    description: 'WNS -0.123 ns',
+                    details: ['Worst negative slack: -0.123 ns'],
+                },
             }),
         ],
     });
@@ -149,6 +153,7 @@ suite('VivadoProject', () => {
         assert.strictEqual(project.blockDesigns[0].isOutOfDate, true);
         assert.strictEqual(project.reports[0].kind, VivadoReportKind.Timing);
         assert.strictEqual(project.reports[0].runName, 'impl_1');
+        assert.strictEqual(project.reports[0].summary?.description, 'WNS -0.123 ns');
     });
 
     test('filters runs by Vivado run type', () => {

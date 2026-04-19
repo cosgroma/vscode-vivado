@@ -82,6 +82,8 @@ Default:
 ## `vscode-vivado.reportsDirectory`
 
 Optional workspace-relative directory for generated or copied report artifacts.
+The project tree scans this directory, plus Vivado run output directories such
+as `<project>.runs/<run>`, for `.rpt` files.
 
 Default:
 
