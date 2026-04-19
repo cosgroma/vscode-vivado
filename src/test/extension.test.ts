@@ -5,6 +5,7 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as ext from '../extension';
+import { openVivadoProjectCommandId } from '../commands/vivado/open-project';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -104,6 +105,31 @@ suite('Extension activation', () => {
 
     test('deactivate does not throw', () => {
         assert.doesNotThrow(() => ext.deactivate());
+    });
+
+    test('registers the Vivado open project command', async () => {
+        const fakeContext = makeFakeContext();
+        const registeredCommands: string[] = [];
+        const origRegisterCommand = vscode.commands.registerCommand.bind(vscode.commands);
+        (vscode.commands as any).registerCommand = (id: string, _handler: (...args: any[]) => any) => {
+            registeredCommands.push(id);
+            return { dispose: () => { /* no-op */ } };
+        };
+
+        try {
+            await withStub(
+                vscode.window as any,
+                'showWarningMessage',
+                async () => undefined,
+                async () => {
+                    ext.activate(fakeContext);
+                }
+            );
+        } finally {
+            (vscode.commands as any).registerCommand = origRegisterCommand;
+        }
+
+        assert.ok(registeredCommands.includes(openVivadoProjectCommandId));
     });
 });
 

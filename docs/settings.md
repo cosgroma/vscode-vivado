@@ -64,8 +64,8 @@ Windows or `settings64.sh` on Linux.
 
 Default: empty string.
 
-Future Vivado task helpers can use this when Vivado is not already available on
-`PATH`.
+Vivado GUI and task helpers use this when Vivado is not already available on
+`PATH` or when the environment must be initialized before launch.
 
 ## `vscode-vivado.projectSearchGlobs`
 
