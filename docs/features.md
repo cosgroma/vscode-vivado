@@ -111,6 +111,14 @@ as a VS Code task. The command generates visible TCL that opens the `.xpr`,
 calls `launch_runs`, waits for the run, and checks that Vivado reports
 `PROGRESS` as `100%`.
 
+### Generate Bitstream
+
+Use the `Generate Bitstream` context action on a Vivado project node or
+implementation run node to launch bitstream generation through the selected
+project-mode implementation run. The command generates visible TCL that opens
+the `.xpr`, calls `launch_runs -to_step write_bitstream`, waits for the run,
+and checks that Vivado reports `PROGRESS` as `100%`.
+
 ## Planned Vivado Features
 
 The extension should grow from HLS project management into Vivado project support. The desired Vivado features are listed here as the product target.
@@ -137,7 +145,6 @@ Expose common Vivado runs as VS Code commands and tasks:
 
 - Elaborate design.
 - Run behavioral simulation.
-- Generate bitstream.
 - Open timing, utilization, DRC, and power reports.
 
 The extension should use Vivado TCL under the hood so every action can be reproduced outside VS Code.
