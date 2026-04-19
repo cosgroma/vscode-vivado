@@ -10,6 +10,7 @@ import stopCsim from './commands/project/run/projects-stop-csim';
 import stopCsynth from './commands/project/run/projects-stop-csynth';
 import generateVivadoBitstream, { generateVivadoBitstreamCommandId } from './commands/vivado/generate-bitstream';
 import openVivadoProject, { openVivadoProjectCommandId } from './commands/vivado/open-project';
+import previewVivadoGeneratedTcl, { previewVivadoGeneratedTclCommandId } from './commands/vivado/preview-generated-tcl';
 import runVivadoImplementation, { runVivadoImplementationCommandId } from './commands/vivado/run-implementation';
 import runVivadoSynthesis, { runVivadoSynthesisCommandId } from './commands/vivado/run-synthesis';
 import { OutputConsole } from './output-console';
@@ -46,6 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('vitis-hls-ide.projects.testbench.addFiles', (e: ProjectTestBenchItem) => addFiles(e.project, true)),
 		vscode.commands.registerCommand('vitis-hls-ide.projects.testbench.removeFile', (e: ProjectFileItem) => removeFile(e.project, e.resourceUri!, true)),
 		vscode.commands.registerCommand(openVivadoProjectCommandId, (e?: VivadoProjectTreeItem) => openVivadoProject(e?.project)),
+		vscode.commands.registerCommand(previewVivadoGeneratedTclCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => previewVivadoGeneratedTcl(e)),
 		vscode.commands.registerCommand(runVivadoSynthesisCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoSynthesis(e)),
 		vscode.commands.registerCommand(runVivadoImplementationCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoImplementation(e)),
 		vscode.commands.registerCommand(generateVivadoBitstreamCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => generateVivadoBitstream(e)),

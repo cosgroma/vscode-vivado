@@ -7,6 +7,7 @@ import * as vscode from 'vscode';
 import * as ext from '../extension';
 import { generateVivadoBitstreamCommandId } from '../commands/vivado/generate-bitstream';
 import { openVivadoProjectCommandId } from '../commands/vivado/open-project';
+import { previewVivadoGeneratedTclCommandId } from '../commands/vivado/preview-generated-tcl';
 import { runVivadoImplementationCommandId } from '../commands/vivado/run-implementation';
 import { runVivadoSynthesisCommandId } from '../commands/vivado/run-synthesis';
 
@@ -133,6 +134,7 @@ suite('Extension activation', () => {
         }
 
         assert.ok(registeredCommands.includes(openVivadoProjectCommandId));
+        assert.ok(registeredCommands.includes(previewVivadoGeneratedTclCommandId));
         assert.ok(registeredCommands.includes(runVivadoSynthesisCommandId));
         assert.ok(registeredCommands.includes(runVivadoImplementationCommandId));
         assert.ok(registeredCommands.includes(generateVivadoBitstreamCommandId));

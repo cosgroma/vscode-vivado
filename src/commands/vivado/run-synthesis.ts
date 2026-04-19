@@ -17,11 +17,15 @@ const commandId = 'vscode-vivado.projects.runSynthesis';
 export type RunVivadoSynthesisDependencies = RunVivadoCommandDependencies;
 export type RunVivadoSynthesisOptions = RunVivadoCommandOptions;
 
-const synthesisCommandDefinition: VivadoRunCommandDefinition = {
+export const vivadoSynthesisActionDefinition: VivadoRunCommandDefinition = {
+    actionId: 'runSynthesis',
+    title: 'Run Synthesis',
     actionName: 'synthesis',
     taskActionName: 'Synthesis',
     runType: VivadoRunType.Synthesis,
     defaultRunName: 'synth_1',
+    supportsProjectTarget: true,
+    supportsRunTarget: true,
     buildTcl: buildVivadoSynthesisTcl,
 };
 
@@ -29,7 +33,7 @@ export default async function runVivadoSynthesis(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
     options: RunVivadoSynthesisOptions = {},
 ): Promise<boolean> {
-    return runVivadoProjectCommand(target, synthesisCommandDefinition, options);
+    return runVivadoProjectCommand(target, vivadoSynthesisActionDefinition, options);
 }
 
 export function buildVivadoSynthesisTcl(project: VivadoProject, run: VivadoRun): string {
@@ -52,7 +56,7 @@ export function buildVivadoSynthesisTaskName(project: VivadoProject, run: Vivado
 }
 
 export function resolveSynthesisTarget(target: VivadoProject | VivadoRunCommandTarget | undefined): ResolvedVivadoRunCommand {
-    return resolveVivadoRunTarget(target, synthesisCommandDefinition);
+    return resolveVivadoRunTarget(target, vivadoSynthesisActionDefinition);
 }
 
 export { commandId as runVivadoSynthesisCommandId };
