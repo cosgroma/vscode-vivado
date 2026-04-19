@@ -40,10 +40,10 @@ test:
 	$(NPM) test
 
 docs:
-	$(NPM) run docs:build
+	$(PYTHON) -m mkdocs build --strict
 
 docs-serve:
-	$(NPM) run docs:serve
+	$(PYTHON) -m mkdocs serve
 
 mock-workspace:
 	$(NPM) run mock:workspace

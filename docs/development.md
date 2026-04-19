@@ -19,6 +19,9 @@ python -m pip install -r requirements-docs.txt
 The repository also includes Makefile shortcuts for the common development
 lifecycle. To install both extension and documentation dependencies:
 
+These shortcuts require GNU Make on `PATH`. On Windows, install it through your
+preferred development environment before using `make` commands.
+
 ```powershell
 make setup
 ```
