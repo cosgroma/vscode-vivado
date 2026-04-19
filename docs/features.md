@@ -64,21 +64,48 @@ After the task ends, the extension reads the solution log and writes it to the V
 
 ### Refresh
 
-Use the refresh action in the Projects view title to rescan the workspace for `hls.app` files and reload project state.
+Use the refresh action in the Projects view title to rescan the workspace for
+`hls.app` and `.xpr` files and reload project state.
 
-## To-Be Vivado Features
+## Current Vivado Features
+
+### Vivado Project Discovery
+
+The extension activates for workspaces that contain `.xpr` files and discovers
+Vivado projects using `vscode-vivado.projectSearchGlobs`.
+
+### Vivado Project Tree
+
+Vivado projects render separately from HLS projects in the Projects tree. Each
+Vivado project contains:
+
+- `Design Sources`
+- `Simulation Sources`
+- `Constraints`
+- `Runs`
+- `Reports`
+
+Empty categories remain visible and expand to no children.
+
+### Open In Vivado
+
+Use the `Open in Vivado` context action on a Vivado project node to launch the
+Vivado IDE for that `.xpr` project. The command generates a visible TCL script
+that runs `open_project`, starts Vivado from the project directory, and uses the
+configured `vscode-vivado.vivadoPath`,
+`vscode-vivado.vivadoExecutablePath`, and
+`vscode-vivado.vivadoSettingsScript` settings.
+
+## Planned Vivado Features
 
 The extension should grow from HLS project management into Vivado project support. The desired Vivado features are listed here as the product target.
 
 For the implementation sequence and deeper feature plan, see the [Vivado Roadmap](roadmap.md).
 
-### Vivado Project Discovery
+### Expanded Source Tree
 
-Discover Vivado projects from `.xpr` files in the workspace. Each project should become a top-level tree item with enough metadata to show the project name, path, part, board, and active fileset.
-
-### Source Tree
-
-Show Vivado project contents in a tree that matches how FPGA engineers think about the project:
+Expand Vivado project contents in a tree that matches how FPGA engineers think
+about the project:
 
 - RTL design sources.
 - Simulation sources.
@@ -108,7 +135,9 @@ Parse Vivado messages from task output and report files. Diagnostics should link
 
 ### TCL Workflow
 
-Support project-based and script-based flows. Users should be able to run checked-in TCL scripts, generate project summaries, and inspect the exact commands issued by the extension.
+Support project-based and script-based flows. Users should be able to run
+checked-in TCL scripts, generate project summaries, and inspect the exact
+commands issued by the extension.
 
 ### HLS And Vivado Together
 

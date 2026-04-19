@@ -2,7 +2,9 @@
 
 ## Project Status
 
-This repository is moving toward Vivado project support. The implementation currently activates around Vitis HLS project files, so the usage instructions are split into current behavior and intended Vivado behavior.
+This repository is moving toward full Vivado project support while preserving
+the inherited Vitis HLS workflow. The usage instructions are split into current
+HLS behavior and current Vivado behavior.
 
 ## Requirements
 
@@ -23,24 +25,24 @@ The extension activates when VS Code finds an `hls.app` file in the workspace.
 After activation, the Vitis HLS IDE activity bar view contains the Projects
 tree.
 
-## Target Vivado Workflow
+## Current Vivado Workflow
 
-The desired workflow is to open a VS Code workspace that contains one or more
+Open a VS Code workspace that contains one or more
 Vivado project files with the `.xpr` extension.
 
-The extension should then activate, discover Vivado projects, and show a Vivado-focused project tree with:
+The extension activates, discovers Vivado projects, and shows a Vivado-focused
+project tree with:
 
 - Design sources.
 - Simulation sources.
 - Constraint files.
-- IP and block design files.
-- Runs for synthesis, implementation, and bitstream generation.
-- Reports and generated artifacts.
+- Runs.
+- Reports.
 
-The extension now activates for `.xpr` workspaces and contributes Vivado
-settings. Vivado project discovery and tree behavior are still under
-development, so use the current Vitis HLS workflow for the project tree and run
-commands that exist today.
+Use the `Open in Vivado` context action on a Vivado project node to launch the
+Vivado IDE with that `.xpr` project. Synthesis, implementation, bitstream,
+simulation, IP, block design, and hardware-manager commands are still under
+development.
 
 ## Configure Tool Paths Today
 

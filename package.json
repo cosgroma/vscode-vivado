@@ -124,6 +124,11 @@
         "command": "vitis-hls-ide.projects.testbench.removeFile",
         "title": "Remove test bench file",
         "icon": "$(remove)"
+      },
+      {
+        "command": "vscode-vivado.projects.openInVivado",
+        "title": "Open in Vivado",
+        "icon": "$(open-preview)"
       }
     ],
     "viewsContainers": {
@@ -164,6 +169,10 @@
         {
           "command": "vitis-hls-ide.projects.testbench.removeFile",
           "when": "false"
+        },
+        {
+          "command": "vscode-vivado.projects.openInVivado",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -192,6 +201,11 @@
         {
           "command": "vitis-hls-ide.projects.testbench.removeFile",
           "when": "view == projectsView && viewItem == projectTestBenchFileItem",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-vivado.projects.openInVivado",
+          "when": "view == projectsView && viewItem == vivadoProjectItem",
           "group": "inline"
         }
       ]
