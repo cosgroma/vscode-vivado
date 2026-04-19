@@ -16,7 +16,7 @@ Vivado.
 ## Current HLS Support
 
 See [Features](docs/features.md) and [Getting Started](docs/getting-started.md)
-for the current user-facing workflow.
+for the current user-facing workflows.
 
 - Discover and manage multiple Vitis HLS projects from one workspace.
 - Browse HLS source files, test bench files, and solutions in the project tree.
@@ -25,6 +25,17 @@ for the current user-facing workflow.
 - Run C synthesis.
 - Run C/RTL cosimulation.
 - Add and remove source and test bench files.
+
+## Current Vivado Support
+
+- Discover Vivado projects from `.xpr` files.
+- Browse Vivado design sources, simulation sources, constraints, runs, and reports.
+- Open a project in the Vivado IDE.
+- Run synthesis, implementation, and bitstream generation as TCL-backed VS Code
+  tasks.
+- Preview generated TCL without executing Vivado.
+- Reset selected synthesis or implementation runs.
+- Clean generated outputs for selected synthesis or implementation runs.
 
 ## Vivado Direction
 
@@ -46,13 +57,11 @@ path. The intended direction is:
 
 ## Requirements
 
-For the current HLS workflow, see [Getting Started](docs/getting-started.md)
-for setup details.
+For setup details, see [Getting Started](docs/getting-started.md).
 
 - [Vitis and Vitis HLS](https://www.xilinx.com/support/download.html)
+- [Vivado](https://www.xilinx.com/support/download.html)
 - The Microsoft C/C++ extension when using C simulation debugging
-
-Vivado-specific requirements will be documented as Vivado support lands.
 
 ## Extension Settings
 

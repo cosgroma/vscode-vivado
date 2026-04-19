@@ -40,8 +40,18 @@ project tree with:
 - Reports.
 
 Use the `Open in Vivado` context action on a Vivado project node to launch the
-Vivado IDE with that `.xpr` project. Synthesis, implementation, bitstream,
-simulation, IP, block design, and hardware-manager commands are still under
+Vivado IDE with that `.xpr` project.
+
+Use the run context actions to:
+
+- preview generated TCL before execution,
+- run synthesis,
+- run implementation,
+- generate bitstreams,
+- reset selected synthesis or implementation runs,
+- clean generated outputs for selected synthesis or implementation runs.
+
+Simulation, IP, block design, and hardware-manager commands are still under
 development.
 
 ## Configure Tool Paths Today

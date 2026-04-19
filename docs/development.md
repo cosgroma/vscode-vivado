@@ -34,9 +34,10 @@ npm run lint
 
 Use the `Run Extension` launch configuration in VS Code. It compiles the extension and opens a new Extension Development Host window.
 
-Open a workspace containing an `hls.app` file to activate the current implementation.
+Open a workspace containing an `hls.app` file or a `.xpr` file to activate the
+current implementation.
 
-For Vivado support work, use a fixture workspace with a small `.xpr` project once `.xpr` activation and parsing are added.
+For Vivado support work, use a fixture workspace with a small `.xpr` project.
 
 ## Vivado Development Direction
 
@@ -44,7 +45,7 @@ Prioritize changes in this order:
 
 - Read-only `.xpr` discovery and metadata parsing.
 - Tree provider changes for Vivado sources, constraints, IP, block designs, runs, and reports.
-- TCL-backed task creation for synthesis, implementation, bitstream, and simulation.
+- TCL-backed task creation for synthesis, implementation, bitstream, run maintenance, and simulation.
 - Problem matchers and diagnostics for Vivado messages.
 - Conservative project editing commands after parser and tree behavior are tested.
 
