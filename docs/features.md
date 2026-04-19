@@ -119,6 +119,19 @@ project-mode implementation run. The command generates visible TCL that opens
 the `.xpr`, calls `launch_runs -to_step write_bitstream`, waits for the run,
 and checks that Vivado reports `PROGRESS` as `100%`.
 
+### Run Behavioral Simulation
+
+Use the `Run Behavioral Simulation` context action on a Vivado project node or
+simulation source file to launch project-mode XSim as a VS Code task. Project
+targets use the `sim_1` simulation fileset when it exists, then fall back to the
+first simulation fileset. Simulation source file targets use the file's
+associated simulation fileset.
+
+The command generates visible TCL that opens the `.xpr`, selects the simulation
+fileset, calls `launch_simulation -mode behavioral`, and runs the simulation
+with `run all`. Simulation output stays in the task terminal, and the task can
+be canceled through VS Code's normal task controls.
+
 ### Preview Generated TCL
 
 Use the `Preview Generated TCL` context action on a Vivado project node,
@@ -200,7 +213,7 @@ about the project:
 Expose common Vivado runs as VS Code commands and tasks:
 
 - Elaborate design.
-- Run behavioral simulation.
+- Add post-synthesis and post-implementation simulation.
 - Open timing, utilization, DRC, and power reports.
 
 The extension should use Vivado TCL under the hood so every action can be reproduced outside VS Code.

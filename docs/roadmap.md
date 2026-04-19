@@ -92,7 +92,7 @@ Vivado output should become actionable inside VS Code:
 
 Vivado Simulator support should be a first-class workflow:
 
-- Run behavioral simulation for a selected simulation fileset or testbench.
+- Extend behavioral simulation beyond project-mode fileset launches.
 - Support `xvhdl`, `xvlog`, `xelab`, and `xsim` where standalone simulator commands are useful.
 - Launch waveform viewing in Vivado.
 - Save and reopen waveform configurations.

@@ -48,11 +48,12 @@ Use the run context actions to:
 - run synthesis,
 - run implementation,
 - generate bitstreams,
+- run behavioral simulation,
 - reset selected synthesis or implementation runs,
 - clean generated outputs for selected synthesis or implementation runs.
 
-Simulation, IP, block design, and hardware-manager commands are still under
-development.
+Post-synthesis simulation, IP, block design, and hardware-manager commands are
+still under development.
 
 ## Configure Tool Paths Today
 

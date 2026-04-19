@@ -2,7 +2,7 @@ import path from 'path';
 import * as vscode from 'vscode';
 import { VivadoBlockDesign } from './vivado-block-design';
 import { VivadoFile } from './vivado-file';
-import { VivadoFileset } from './vivado-fileset';
+import { VivadoFileset, VivadoFilesetKind } from './vivado-fileset';
 import { VivadoIp } from './vivado-ip';
 import { VivadoReport } from './vivado-report';
 import { VivadoRun, VivadoRunType } from './vivado-run';
@@ -73,6 +73,10 @@ export class VivadoProject {
 
     public get simulationSources(): VivadoFile[] {
         return this.filesets.flatMap(fileset => fileset.simulationSources);
+    }
+
+    public get simulationFilesets(): VivadoFileset[] {
+        return this.filesets.filter(fileset => fileset.kind === VivadoFilesetKind.Simulation);
     }
 
     public get constraints(): VivadoFile[] {

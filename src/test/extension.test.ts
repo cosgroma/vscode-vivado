@@ -10,6 +10,7 @@ import { generateVivadoBitstreamCommandId } from '../commands/vivado/generate-bi
 import { openVivadoProjectCommandId } from '../commands/vivado/open-project';
 import { previewVivadoGeneratedTclCommandId } from '../commands/vivado/preview-generated-tcl';
 import { resetVivadoRunCommandId } from '../commands/vivado/reset-run';
+import { runVivadoBehavioralSimulationCommandId } from '../commands/vivado/run-behavioral-simulation';
 import { runVivadoImplementationCommandId } from '../commands/vivado/run-implementation';
 import { runVivadoSynthesisCommandId } from '../commands/vivado/run-synthesis';
 
@@ -141,6 +142,7 @@ suite('Extension activation', () => {
         assert.ok(registeredCommands.includes(runVivadoSynthesisCommandId));
         assert.ok(registeredCommands.includes(runVivadoImplementationCommandId));
         assert.ok(registeredCommands.includes(generateVivadoBitstreamCommandId));
+        assert.ok(registeredCommands.includes(runVivadoBehavioralSimulationCommandId));
     });
 });
 

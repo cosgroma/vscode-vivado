@@ -140,6 +140,7 @@ suite('VivadoProject', () => {
 
         assert.deepStrictEqual(project.designSources.map(file => path.basename(file.uri.fsPath)), ['top.sv']);
         assert.deepStrictEqual(project.simulationSources.map(file => path.basename(file.uri.fsPath)), ['top_tb.sv']);
+        assert.deepStrictEqual(project.simulationFilesets.map(fileset => fileset.name), ['sim_1']);
         assert.deepStrictEqual(project.constraints.map(file => path.basename(file.uri.fsPath)), ['top.xdc']);
         assert.strictEqual(project.files.length, 3);
     });

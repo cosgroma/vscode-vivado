@@ -97,6 +97,7 @@ export class VivadoProjectTreeItem extends TreeItem {
             'vivadoDesignSourcesItem',
             'file-code',
             'vivadoDesignSourceFileItem',
+            () => this.project,
             () => this.project.designSources,
         );
         this._simulationSourcesItem = new VivadoFileCategoryItem(
@@ -104,6 +105,7 @@ export class VivadoProjectTreeItem extends TreeItem {
             'vivadoSimulationSourcesItem',
             'beaker',
             'vivadoSimulationSourceFileItem',
+            () => this.project,
             () => this.project.simulationSources,
         );
         this._constraintsItem = new VivadoFileCategoryItem(
@@ -111,6 +113,7 @@ export class VivadoProjectTreeItem extends TreeItem {
             'vivadoConstraintsItem',
             'symbol-ruler',
             'vivadoConstraintFileItem',
+            () => this.project,
             () => this.project.constraints,
         );
         this._runsItem = new VivadoRunsItem(() => this.project, () => this.project.runs);
@@ -139,6 +142,7 @@ export class VivadoProjectTreeItem extends TreeItem {
 }
 
 class VivadoFileCategoryItem extends TreeItem {
+    private readonly _getProject: () => VivadoProject;
     private readonly _getFiles: () => VivadoFile[];
     private readonly _fileContextValue: string;
 
@@ -147,11 +151,13 @@ class VivadoFileCategoryItem extends TreeItem {
         contextValue: string,
         iconId: string,
         fileContextValue: string,
+        getProject: () => VivadoProject,
         getFiles: () => VivadoFile[],
     ) {
         super(label, vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = contextValue;
         this.iconPath = new vscode.ThemeIcon(iconId);
+        this._getProject = getProject;
         this._getFiles = getFiles;
         this._fileContextValue = fileContextValue;
     }
@@ -160,15 +166,17 @@ class VivadoFileCategoryItem extends TreeItem {
         return Promise.resolve(this._getFiles()
             .slice()
             .sort((a, b) => path.basename(a.uri.fsPath).localeCompare(path.basename(b.uri.fsPath)))
-            .map(file => new VivadoProjectFileItem(file, this._fileContextValue)));
+            .map(file => new VivadoProjectFileItem(this._getProject(), file, this._fileContextValue)));
     }
 }
 
 export class VivadoProjectFileItem extends TreeItem {
+    public readonly project: VivadoProject;
     public readonly file: VivadoFile;
 
-    constructor(file: VivadoFile, contextValue: string) {
+    constructor(project: VivadoProject, file: VivadoFile, contextValue: string) {
         super(path.basename(file.uri.fsPath));
+        this.project = project;
         this.file = file;
         this.contextValue = contextValue;
         this.resourceUri = file.uri;

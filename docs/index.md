@@ -22,6 +22,8 @@ The current Vivado workflow discovers `.xpr` projects, surfaces sources, constra
 - Browse Vivado design sources, simulation sources, constraints, runs, and reports.
 - Open Vivado projects in the Vivado IDE.
 - Run synthesis, implementation, and bitstream generation through visible TCL-backed tasks.
+- Run behavioral simulation through project-mode XSim from a Vivado project or
+  selected simulation source.
 - Surface file-backed Vivado task diagnostics in Problems when Vivado emits
   file and line locations.
 - Surface timing, utilization, DRC, methodology, and power report files with
@@ -33,7 +35,7 @@ The current Vivado workflow discovers `.xpr` projects, surfaces sources, constra
 ## Desired Vivado Support
 
 - Show RTL sources, block designs, constraints, simulation sources, IP, and generated outputs.
-- Run simulation and report-generation flows from VS Code tasks.
+- Extend simulation and report-generation flows from VS Code tasks.
 - Extend Vivado report diagnostics and generated report workflows.
 - Support TCL-first automation so the extension can mirror reproducible command-line flows.
 - Keep Vitis HLS support available where it helps FPGA projects that use both HLS and Vivado.
