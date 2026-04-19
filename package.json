@@ -129,6 +129,11 @@
         "command": "vscode-vivado.projects.openInVivado",
         "title": "Open in Vivado",
         "icon": "$(open-preview)"
+      },
+      {
+        "command": "vscode-vivado.projects.runSynthesis",
+        "title": "Run Synthesis",
+        "icon": "$(debug-start)"
       }
     ],
     "viewsContainers": {
@@ -173,6 +178,10 @@
         {
           "command": "vscode-vivado.projects.openInVivado",
           "when": "false"
+        },
+        {
+          "command": "vscode-vivado.projects.runSynthesis",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -206,6 +215,16 @@
         {
           "command": "vscode-vivado.projects.openInVivado",
           "when": "view == projectsView && viewItem == vivadoProjectItem",
+          "group": "inline"
+        },
+        {
+          "command": "vscode-vivado.projects.runSynthesis",
+          "when": "view == projectsView && viewItem == vivadoProjectItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "vscode-vivado.projects.runSynthesis",
+          "when": "view == projectsView && viewItem == vivadoSynthesisRunItem",
           "group": "inline"
         }
       ]

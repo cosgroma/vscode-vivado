@@ -8,6 +8,7 @@ import { buildVivadoEnvironment } from '../../utils/vivado-run';
 import { getVivadoSettings, VivadoSettings } from '../../utils/vivado-settings';
 import {
     buildVivadoTclFileUri,
+    quoteTclString,
     resolveVivadoTclDirectory,
     VivadoTclScript,
     VivadoTclWriteOptions,
@@ -272,17 +273,6 @@ function getExecutableExtensions(command: string, environment: NodeJS.ProcessEnv
         ...pathext.split(';').filter(extension => extension.length > 0),
         '',
     ];
-}
-
-function quoteTclString(value: string): string {
-    return `"${value
-        .replace(/\\/g, '\\\\')
-        .replace(/\$/g, '\\$')
-        .replace(/"/g, '\\"')
-        .replace(/\[/g, '\\[')
-        .replace(/\]/g, '\\]')
-        .replace(/\r/g, '\\r')
-        .replace(/\n/g, '\\n')}"`;
 }
 
 function quoteShellArgument(value: string, platform: NodeJS.Platform): string {
