@@ -8,6 +8,7 @@ import runCsynth from './commands/project/run/projects-run-csynth';
 import stopCosim from './commands/project/run/projects-stop-cosim';
 import stopCsim from './commands/project/run/projects-stop-csim';
 import stopCsynth from './commands/project/run/projects-stop-csynth';
+import runVivadoBehavioralSimulation, { runVivadoBehavioralSimulationCommandId } from './commands/vivado/run-behavioral-simulation';
 import generateVivadoBitstream, { generateVivadoBitstreamCommandId } from './commands/vivado/generate-bitstream';
 import cleanVivadoRunOutputs, { cleanVivadoRunOutputsCommandId } from './commands/vivado/clean-run-outputs';
 import openVivadoProject, { openVivadoProjectCommandId } from './commands/vivado/open-project';
@@ -18,7 +19,7 @@ import runVivadoSynthesis, { runVivadoSynthesisCommandId } from './commands/viva
 import { OutputConsole } from './output-console';
 import ProjectManager from './project-manager';
 import VivadoProjectManager from './vivado-project-manager';
-import ProjectsViewTreeProvider, { ProjectFileItem, ProjectSourceItem, ProjectTestBenchItem, VivadoProjectTreeItem, VivadoRunTreeItem } from './views/projects-tree';
+import ProjectsViewTreeProvider, { ProjectFileItem, ProjectSourceItem, ProjectTestBenchItem, VivadoProjectFileItem, VivadoProjectTreeItem, VivadoRunTreeItem } from './views/projects-tree';
 
 // TODO Make Vitis Unified IDE optional
 // TODO Proper feedback to let ppl know they don't have Vitis Unified IDE
@@ -55,6 +56,9 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand(runVivadoSynthesisCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoSynthesis(e)),
 		vscode.commands.registerCommand(runVivadoImplementationCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoImplementation(e)),
 		vscode.commands.registerCommand(generateVivadoBitstreamCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => generateVivadoBitstream(e)),
+		vscode.commands.registerCommand(runVivadoBehavioralSimulationCommandId, (e?: VivadoProjectTreeItem | VivadoProjectFileItem) => {
+			return runVivadoBehavioralSimulation(e instanceof VivadoProjectTreeItem ? e.project : e);
+		}),
 		projectsViewProvider,
 		OutputConsole.instance,
 		ProjectManager.instance,

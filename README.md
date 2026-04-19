@@ -33,6 +33,8 @@ for the current user-facing workflows.
 - Open a project in the Vivado IDE.
 - Run synthesis, implementation, and bitstream generation as TCL-backed VS Code
   tasks.
+- Run behavioral simulation for a Vivado project or selected simulation source
+  fileset through project-mode XSim.
 - Surface file-backed Vivado task diagnostics in Problems when Vivado emits
   file and line locations.
 - Surface timing, utilization, DRC, methodology, and power report files with
@@ -56,8 +58,8 @@ path. The intended direction is:
   constraints, runs, reports, IP, block designs, TCL scripts, and hardware.
 - Run Vivado tasks through visible, reproducible TCL.
 - Extend Vivado diagnostics and report summaries inside VS Code.
-- Add XSim, IP, block design, and hardware manager workflows after the project
-  foundation is reliable.
+- Extend XSim, IP, block design, and hardware manager workflows after the
+  project foundation is reliable.
 
 ## Requirements
 

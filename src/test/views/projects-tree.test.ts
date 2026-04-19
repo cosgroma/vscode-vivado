@@ -350,6 +350,7 @@ suite('ProjectsViewTreeProvider', () => {
         const files = await (designSources as TestTreeNode<VivadoProjectFileItem[]>).getChildren();
 
         assert.deepStrictEqual(files.map(file => file.label), ['a.sv', 'z.sv']);
+        assert.strictEqual(files[0].project, vivadoProjectsProvider.projects[0]);
         assert.strictEqual(files[0].contextValue, 'vivadoDesignSourceFileItem');
         assert.strictEqual(files[0].command?.command, 'vscode.open');
     });

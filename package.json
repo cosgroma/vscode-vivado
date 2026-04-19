@@ -159,6 +159,11 @@
         "command": "vscode-vivado.projects.generateBitstream",
         "title": "Generate Bitstream",
         "icon": "$(circuit-board)"
+      },
+      {
+        "command": "vscode-vivado.projects.runBehavioralSimulation",
+        "title": "Run Behavioral Simulation",
+        "icon": "$(debug-start)"
       }
     ],
     "viewsContainers": {
@@ -227,6 +232,10 @@
         {
           "command": "vscode-vivado.projects.generateBitstream",
           "when": "false"
+        },
+        {
+          "command": "vscode-vivado.projects.runBehavioralSimulation",
+          "when": "false"
         }
       ],
       "view/title": [
@@ -265,7 +274,7 @@
         {
           "command": "vscode-vivado.projects.previewGeneratedTcl",
           "when": "view == projectsView && viewItem == vivadoProjectItem",
-          "group": "inline@4"
+          "group": "inline@5"
         },
         {
           "command": "vscode-vivado.projects.runSynthesis",
@@ -306,6 +315,16 @@
           "command": "vscode-vivado.projects.generateBitstream",
           "when": "view == projectsView && viewItem == vivadoProjectItem",
           "group": "inline@3"
+        },
+        {
+          "command": "vscode-vivado.projects.runBehavioralSimulation",
+          "when": "view == projectsView && viewItem == vivadoProjectItem",
+          "group": "inline@4"
+        },
+        {
+          "command": "vscode-vivado.projects.runBehavioralSimulation",
+          "when": "view == projectsView && viewItem == vivadoSimulationSourceFileItem",
+          "group": "inline"
         },
         {
           "command": "vscode-vivado.projects.generateBitstream",
