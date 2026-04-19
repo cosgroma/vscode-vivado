@@ -3,11 +3,21 @@ import * as vscode from 'vscode';
 import { HLSProject } from '../models/hls-project';
 import { HLSProjectFile } from '../models/hls-project-file';
 import { HLSProjectSolution } from '../models/hls-project-solution';
+import { VivadoFile } from '../models/vivado-file';
+import { VivadoProject } from '../models/vivado-project';
+import { VivadoReport } from '../models/vivado-report';
+import { VivadoRun, VivadoRunStatus, VivadoRunType } from '../models/vivado-run';
 import ProjectManager from '../project-manager';
+import VivadoProjectManager from '../vivado-project-manager';
 
 const startIconPath = new vscode.ThemeIcon('debug-start', new vscode.ThemeColor('debugIcon.startForeground'));
 const stopIconPath = new vscode.ThemeIcon('debug-stop', new vscode.ThemeColor('debugIcon.stopForeground'));
 const loadingIconPath = new vscode.ThemeIcon('loading~spin');
+
+interface ProjectsProvider<TProject> {
+    on(event: 'projectsChanged', listener: () => void): unknown;
+    getProjects(): Promise<TProject[]>;
+}
 
 class TreeItem extends vscode.TreeItem {
     constructor(label: string, collapsibleState: vscode.TreeItemCollapsibleState = vscode.TreeItemCollapsibleState.None) {
@@ -64,6 +74,184 @@ class ProjectTreeItem extends TreeItem {
             this._testBenchItem,
             ...this._solutionItems
         ]);
+    }
+}
+
+export class VivadoProjectTreeItem extends TreeItem {
+    public project: VivadoProject;
+
+    private readonly _designSourcesItem: VivadoFileCategoryItem;
+    private readonly _simulationSourcesItem: VivadoFileCategoryItem;
+    private readonly _constraintsItem: VivadoFileCategoryItem;
+    private readonly _runsItem: VivadoRunsItem;
+    private readonly _reportsItem: VivadoReportsItem;
+
+    constructor(project: VivadoProject) {
+        super(`${project.name} (Vivado)`, vscode.TreeItemCollapsibleState.Collapsed);
+        this.project = project;
+        this.contextValue = 'vivadoProjectItem';
+        this.iconPath = new vscode.ThemeIcon('circuit-board');
+
+        this._designSourcesItem = new VivadoFileCategoryItem(
+            'Design Sources',
+            'vivadoDesignSourcesItem',
+            'file-code',
+            'vivadoDesignSourceFileItem',
+            () => this.project.designSources,
+        );
+        this._simulationSourcesItem = new VivadoFileCategoryItem(
+            'Simulation Sources',
+            'vivadoSimulationSourcesItem',
+            'beaker',
+            'vivadoSimulationSourceFileItem',
+            () => this.project.simulationSources,
+        );
+        this._constraintsItem = new VivadoFileCategoryItem(
+            'Constraints',
+            'vivadoConstraintsItem',
+            'symbol-ruler',
+            'vivadoConstraintFileItem',
+            () => this.project.constraints,
+        );
+        this._runsItem = new VivadoRunsItem(() => this.project.runs);
+        this._reportsItem = new VivadoReportsItem(() => this.project.reports);
+
+        this.updateProject(project);
+    }
+
+    public updateProject(project: VivadoProject): void {
+        this.project = project;
+        this.label = `${project.name} (Vivado)`;
+        this.description = project.part;
+        this.tooltip = project.xprFile.fsPath;
+        this.resourceUri = project.xprFile;
+    }
+
+    public getChildren(): Thenable<TreeItem[]> {
+        return Promise.resolve([
+            this._designSourcesItem,
+            this._simulationSourcesItem,
+            this._constraintsItem,
+            this._runsItem,
+            this._reportsItem,
+        ]);
+    }
+}
+
+class VivadoFileCategoryItem extends TreeItem {
+    private readonly _getFiles: () => VivadoFile[];
+    private readonly _fileContextValue: string;
+
+    constructor(
+        label: string,
+        contextValue: string,
+        iconId: string,
+        fileContextValue: string,
+        getFiles: () => VivadoFile[],
+    ) {
+        super(label, vscode.TreeItemCollapsibleState.Collapsed);
+        this.contextValue = contextValue;
+        this.iconPath = new vscode.ThemeIcon(iconId);
+        this._getFiles = getFiles;
+        this._fileContextValue = fileContextValue;
+    }
+
+    public getChildren(): Thenable<VivadoProjectFileItem[]> {
+        return Promise.resolve(this._getFiles()
+            .slice()
+            .sort((a, b) => path.basename(a.uri.fsPath).localeCompare(path.basename(b.uri.fsPath)))
+            .map(file => new VivadoProjectFileItem(file, this._fileContextValue)));
+    }
+}
+
+export class VivadoProjectFileItem extends TreeItem {
+    public readonly file: VivadoFile;
+
+    constructor(file: VivadoFile, contextValue: string) {
+        super(path.basename(file.uri.fsPath));
+        this.file = file;
+        this.contextValue = contextValue;
+        this.resourceUri = file.uri;
+        this.description = file.filesetName;
+        this.iconPath = new vscode.ThemeIcon('file-code');
+        this.command = {
+            command: 'vscode.open',
+            title: 'Open File',
+            arguments: [file.uri],
+        };
+    }
+}
+
+class VivadoRunsItem extends TreeItem {
+    private readonly _getRuns: () => VivadoRun[];
+
+    constructor(getRuns: () => VivadoRun[]) {
+        super('Runs', vscode.TreeItemCollapsibleState.Collapsed);
+        this.contextValue = 'vivadoRunsItem';
+        this.iconPath = new vscode.ThemeIcon('run-all');
+        this._getRuns = getRuns;
+    }
+
+    public getChildren(): Thenable<VivadoRunTreeItem[]> {
+        return Promise.resolve(this._getRuns()
+            .slice()
+            .sort(compareVivadoRuns)
+            .map(run => new VivadoRunTreeItem(run)));
+    }
+}
+
+export class VivadoRunTreeItem extends TreeItem {
+    public readonly run: VivadoRun;
+
+    constructor(run: VivadoRun) {
+        super(run.name);
+        this.run = run;
+        this.contextValue = 'vivadoRunItem';
+        this.description = `${formatRunType(run.type)}: ${formatRunStatus(run.status)}`;
+        this.tooltip = [
+            `Run: ${run.name}`,
+            `Type: ${formatRunType(run.type)}`,
+            `Status: ${formatRunStatus(run.status)}`,
+            run.strategy ? `Strategy: ${run.strategy}` : undefined,
+            run.parentRunName ? `Parent: ${run.parentRunName}` : undefined,
+        ].filter((line): line is string => Boolean(line)).join('\n');
+        this.iconPath = iconForRunStatus(run.status);
+    }
+}
+
+class VivadoReportsItem extends TreeItem {
+    private readonly _getReports: () => VivadoReport[];
+
+    constructor(getReports: () => VivadoReport[]) {
+        super('Reports', vscode.TreeItemCollapsibleState.Collapsed);
+        this.contextValue = 'vivadoReportsItem';
+        this.iconPath = new vscode.ThemeIcon('graph');
+        this._getReports = getReports;
+    }
+
+    public getChildren(): Thenable<VivadoReportTreeItem[]> {
+        return Promise.resolve(this._getReports()
+            .slice()
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(report => new VivadoReportTreeItem(report)));
+    }
+}
+
+export class VivadoReportTreeItem extends TreeItem {
+    public readonly report: VivadoReport;
+
+    constructor(report: VivadoReport) {
+        super(report.name);
+        this.report = report;
+        this.contextValue = 'vivadoReportItem';
+        this.description = report.runName ?? report.kind;
+        this.resourceUri = report.uri;
+        this.iconPath = new vscode.ThemeIcon('graph');
+        this.command = {
+            command: 'vscode.open',
+            title: 'Open Report',
+            arguments: [report.uri],
+        };
     }
 }
 
@@ -287,10 +475,20 @@ export default class ProjectsViewTreeProvider implements vscode.TreeDataProvider
     public readonly onDidChangeTreeData: vscode.Event<TreeItem | undefined | void> = this._onDidChangeTreeData.event;
 
     private _disposables: vscode.Disposable[] = [];
-    private readonly _children: ProjectTreeItem[] = [];
+    private readonly _hlsChildren: ProjectTreeItem[] = [];
+    private readonly _vivadoChildren: VivadoProjectTreeItem[] = [];
+    private readonly _hlsProjectManager: ProjectsProvider<HLSProject>;
+    private readonly _vivadoProjectManager: ProjectsProvider<VivadoProject>;
 
-    constructor() {
-        ProjectManager.instance.on('projectsChanged', () => this._onDidChangeTreeData.fire());
+    constructor(
+        hlsProjectManager: ProjectsProvider<HLSProject> = ProjectManager.instance,
+        vivadoProjectManager: ProjectsProvider<VivadoProject> = VivadoProjectManager.instance,
+    ) {
+        this._hlsProjectManager = hlsProjectManager;
+        this._vivadoProjectManager = vivadoProjectManager;
+
+        this._hlsProjectManager.on('projectsChanged', () => this._onDidChangeTreeData.fire());
+        this._vivadoProjectManager.on('projectsChanged', () => this._onDidChangeTreeData.fire());
         this._disposables = [
             vscode.tasks.onDidStartTask(() => this._onDidChangeTreeData.fire()),
             vscode.tasks.onDidEndTask(() => this._onDidChangeTreeData.fire()),
@@ -298,7 +496,7 @@ export default class ProjectsViewTreeProvider implements vscode.TreeDataProvider
         ];
     }
 
-    getTreeItem(element: ProjectTreeItem): vscode.TreeItem {
+    getTreeItem(element: TreeItem): vscode.TreeItem {
         return element;
     }
 
@@ -306,32 +504,120 @@ export default class ProjectsViewTreeProvider implements vscode.TreeDataProvider
         if (element) {
             return element.getChildren();
         } else {
-            const newProjects = await ProjectManager.instance.getProjects();
+            const [hlsProjects, vivadoProjects] = await Promise.all([
+                this._hlsProjectManager.getProjects(),
+                this._vivadoProjectManager.getProjects(),
+            ]);
 
-            // Add new projects
-            for (const project of newProjects) {
-                if (this._children.some(p => p.project.uri.toString() === project.uri.toString())) {
-                    continue; // Already exists
-                } else {
-                    this._children.push(new ProjectTreeItem(project));
-                }
-            }
+            this.syncHlsProjects(hlsProjects);
+            this.syncVivadoProjects(vivadoProjects);
 
-            // Remove projects that no longer exist
-            this._children.forEach(child => {
-                if (!newProjects.some(p => p.uri.toString() === child.project.uri.toString())) {
-                    this._children.splice(this._children.indexOf(child), 1);
-                }
-            });
-
-            this._children.sort((a, b) => a.project.name.localeCompare(b.project.name));
-
-            return this._children;
+            return [
+                ...this._hlsChildren,
+                ...this._vivadoChildren,
+            ];
         }
+    }
+
+    private syncHlsProjects(newProjects: HLSProject[]): void {
+        for (const project of newProjects) {
+            if (!this._hlsChildren.some(child => child.project.uri.toString() === project.uri.toString())) {
+                this._hlsChildren.push(new ProjectTreeItem(project));
+            }
+        }
+
+        for (let i = this._hlsChildren.length - 1; i >= 0; i--) {
+            if (!newProjects.some(project => project.uri.toString() === this._hlsChildren[i].project.uri.toString())) {
+                this._hlsChildren.splice(i, 1);
+            }
+        }
+
+        this._hlsChildren.sort((a, b) => a.project.name.localeCompare(b.project.name));
+    }
+
+    private syncVivadoProjects(newProjects: VivadoProject[]): void {
+        for (const project of newProjects) {
+            const existingChild = this._vivadoChildren.find(child => child.project.xprFile.toString() === project.xprFile.toString());
+
+            if (existingChild) {
+                existingChild.updateProject(project);
+            } else {
+                this._vivadoChildren.push(new VivadoProjectTreeItem(project));
+            }
+        }
+
+        for (let i = this._vivadoChildren.length - 1; i >= 0; i--) {
+            if (!newProjects.some(project => project.xprFile.toString() === this._vivadoChildren[i].project.xprFile.toString())) {
+                this._vivadoChildren.splice(i, 1);
+            }
+        }
+
+        this._vivadoChildren.sort((a, b) => a.project.name.localeCompare(b.project.name));
     }
 
     public dispose() {
         this._onDidChangeTreeData.dispose();
         this._disposables.forEach(d => d.dispose());
+    }
+}
+
+function compareVivadoRuns(a: VivadoRun, b: VivadoRun): number {
+    const typeComparison = runTypeOrder(a.type) - runTypeOrder(b.type);
+    return typeComparison === 0 ? a.name.localeCompare(b.name) : typeComparison;
+}
+
+function runTypeOrder(type: VivadoRunType): number {
+    switch (type) {
+        case VivadoRunType.Synthesis:
+            return 0;
+        case VivadoRunType.Implementation:
+            return 1;
+        case VivadoRunType.Simulation:
+            return 2;
+        default:
+            return 3;
+    }
+}
+
+function formatRunType(type: VivadoRunType): string {
+    switch (type) {
+        case VivadoRunType.Synthesis:
+            return 'synthesis';
+        case VivadoRunType.Implementation:
+            return 'implementation';
+        case VivadoRunType.Simulation:
+            return 'simulation';
+        default:
+            return 'other';
+    }
+}
+
+function formatRunStatus(status: VivadoRunStatus): string {
+    switch (status) {
+        case VivadoRunStatus.NotStarted:
+            return 'not started';
+        case VivadoRunStatus.Running:
+            return 'running';
+        case VivadoRunStatus.Complete:
+            return 'complete';
+        case VivadoRunStatus.Failed:
+            return 'failed';
+        default:
+            return 'unknown';
+    }
+}
+
+function iconForRunStatus(status: VivadoRunStatus): vscode.ThemeIcon {
+    switch (status) {
+        case VivadoRunStatus.Running:
+            return loadingIconPath;
+        case VivadoRunStatus.Complete:
+            return new vscode.ThemeIcon('check');
+        case VivadoRunStatus.Failed:
+            return new vscode.ThemeIcon('error');
+        case VivadoRunStatus.NotStarted:
+            return new vscode.ThemeIcon('circle-outline');
+        default:
+            return new vscode.ThemeIcon('question');
     }
 }
