@@ -136,6 +136,11 @@
         "icon": "$(open-preview)"
       },
       {
+        "command": "vscode-vivado.projects.resetRun",
+        "title": "Reset Run",
+        "icon": "$(discard)"
+      },
+      {
         "command": "vscode-vivado.projects.runSynthesis",
         "title": "Run Synthesis",
         "icon": "$(debug-start)"
@@ -196,6 +201,10 @@
         },
         {
           "command": "vscode-vivado.projects.previewGeneratedTcl",
+          "when": "false"
+        },
+        {
+          "command": "vscode-vivado.projects.resetRun",
           "when": "false"
         },
         {
@@ -265,6 +274,11 @@
           "group": "inline@1"
         },
         {
+          "command": "vscode-vivado.projects.resetRun",
+          "when": "view == projectsView && viewItem == vivadoSynthesisRunItem",
+          "group": "inline@2"
+        },
+        {
           "command": "vscode-vivado.projects.runImplementation",
           "when": "view == projectsView && viewItem == vivadoProjectItem",
           "group": "inline@2"
@@ -288,6 +302,11 @@
           "command": "vscode-vivado.projects.previewGeneratedTcl",
           "when": "view == projectsView && viewItem == vivadoImplementationRunItem",
           "group": "inline@2"
+        },
+        {
+          "command": "vscode-vivado.projects.resetRun",
+          "when": "view == projectsView && viewItem == vivadoImplementationRunItem",
+          "group": "inline@3"
         }
       ]
     },

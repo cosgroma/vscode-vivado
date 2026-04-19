@@ -12,8 +12,9 @@ import previewVivadoGeneratedTcl, {
     VivadoTclPreviewQuickPickItem,
 } from '../../commands/vivado/preview-generated-tcl';
 import { buildVivadoImplementationTcl } from '../../commands/vivado/run-implementation';
+import { buildVivadoResetRunTcl } from '../../commands/vivado/reset-run';
 import { buildVivadoSynthesisTcl, vivadoSynthesisActionDefinition } from '../../commands/vivado/run-synthesis';
-import { vivadoBuildTclActionDefinitions } from '../../commands/vivado/tcl-actions';
+import { vivadoBuildTclActionDefinitions, vivadoTclActionDefinitions } from '../../commands/vivado/tcl-actions';
 import { VivadoProject } from '../../models/vivado-project';
 import { VivadoRun, VivadoRunStatus, VivadoRunType } from '../../models/vivado-run';
 
@@ -87,10 +88,17 @@ function makePreviewDependencies(options: {
 }
 
 suite('Vivado generated TCL preview action registry', () => {
-    test('contains the existing build actions in preview order', () => {
+    test('contains the existing build actions in build order', () => {
         assert.deepStrictEqual(
             vivadoBuildTclActionDefinitions.map(action => action.title),
             ['Run Synthesis', 'Run Implementation', 'Generate Bitstream'],
+        );
+    });
+
+    test('contains reset after the current build actions in preview order', () => {
+        assert.deepStrictEqual(
+            vivadoTclActionDefinitions.map(action => action.title),
+            ['Run Synthesis', 'Run Implementation', 'Generate Bitstream', 'Reset Run'],
         );
     });
 });
@@ -109,23 +117,23 @@ suite('Vivado generated TCL preview action resolution', () => {
         );
     });
 
-    test('offers only synthesis actions for an explicit synthesis run target', () => {
+    test('offers synthesis and reset actions for an explicit synthesis run target', () => {
         const project = makeProject();
         const run = project.runs[0];
 
         assert.deepStrictEqual(
             resolveVivadoTclPreviewActions({ project, run }).map(action => action.definition.title),
-            ['Run Synthesis'],
+            ['Run Synthesis', 'Reset Run'],
         );
     });
 
-    test('offers implementation and bitstream actions for an explicit implementation run target', () => {
+    test('offers implementation, bitstream, and reset actions for an explicit implementation run target', () => {
         const project = makeProject();
         const run = project.runs[1];
 
         assert.deepStrictEqual(
             resolveVivadoTclPreviewActions({ project, run }).map(action => action.definition.title),
-            ['Run Implementation', 'Generate Bitstream'],
+            ['Run Implementation', 'Generate Bitstream', 'Reset Run'],
         );
     });
 
@@ -207,6 +215,31 @@ suite('previewVivadoGeneratedTcl', () => {
         assert.strictEqual(shownDocument?.uri.scheme, 'untitled');
     });
 
+    test('opens reset from an explicit run quick pick', async () => {
+        const project = makeProject();
+        const run = project.runs[0];
+        let quickPickLabels: string[] = [];
+        let openedContent = '';
+
+        const result = await previewVivadoGeneratedTcl({ project, run }, {
+            dependencies: makePreviewDependencies({
+                pickTitle: 'Reset Run',
+                onQuickPick: items => {
+                    quickPickLabels = items.map(item => item.label);
+                },
+                onOpenTextDocument: options => {
+                    openedContent = options.content;
+                },
+            }),
+        });
+
+        assert.strictEqual(result, true);
+        assert.deepStrictEqual(quickPickLabels, ['Run Synthesis', 'Reset Run']);
+        assert.ok(openedContent.includes('# Action: Reset Run'));
+        assert.ok(openedContent.includes('# Destructive: Yes'));
+        assert.ok(openedContent.endsWith(`${buildVivadoResetRunTcl(project, run)}\n`));
+    });
+
     test('opens the only valid action without showing a quick pick', async () => {
         const project = makeProject();
         const run = project.runs[0];
@@ -214,6 +247,7 @@ suite('previewVivadoGeneratedTcl', () => {
         let openedContent = '';
 
         const result = await previewVivadoGeneratedTcl({ project, run }, {
+            actionDefinitions: [vivadoBuildTclActionDefinitions[0]],
             dependencies: makePreviewDependencies({
                 onQuickPick: () => {
                     quickPickCalled = true;
