@@ -9,10 +9,11 @@ import stopCosim from './commands/project/run/projects-stop-cosim';
 import stopCsim from './commands/project/run/projects-stop-csim';
 import stopCsynth from './commands/project/run/projects-stop-csynth';
 import openVivadoProject, { openVivadoProjectCommandId } from './commands/vivado/open-project';
+import runVivadoSynthesis, { runVivadoSynthesisCommandId } from './commands/vivado/run-synthesis';
 import { OutputConsole } from './output-console';
 import ProjectManager from './project-manager';
 import VivadoProjectManager from './vivado-project-manager';
-import ProjectsViewTreeProvider, { ProjectFileItem, ProjectSourceItem, ProjectTestBenchItem, VivadoProjectTreeItem } from './views/projects-tree';
+import ProjectsViewTreeProvider, { ProjectFileItem, ProjectSourceItem, ProjectTestBenchItem, VivadoProjectTreeItem, VivadoRunTreeItem } from './views/projects-tree';
 
 // TODO Make Vitis Unified IDE optional
 // TODO Proper feedback to let ppl know they don't have Vitis Unified IDE
@@ -43,6 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('vitis-hls-ide.projects.testbench.addFiles', (e: ProjectTestBenchItem) => addFiles(e.project, true)),
 		vscode.commands.registerCommand('vitis-hls-ide.projects.testbench.removeFile', (e: ProjectFileItem) => removeFile(e.project, e.resourceUri!, true)),
 		vscode.commands.registerCommand(openVivadoProjectCommandId, (e?: VivadoProjectTreeItem) => openVivadoProject(e?.project)),
+		vscode.commands.registerCommand(runVivadoSynthesisCommandId, (e?: VivadoProjectTreeItem | VivadoRunTreeItem) => runVivadoSynthesis(e)),
 		projectsViewProvider,
 		OutputConsole.instance,
 		ProjectManager.instance,

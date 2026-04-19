@@ -363,6 +363,9 @@ suite('ProjectsViewTreeProvider', () => {
         const reports = await (children[4] as TestTreeNode<VivadoReportTreeItem[]>).getChildren();
 
         assert.deepStrictEqual(runs.map(run => run.label), ['synth_1', 'impl_1']);
+        assert.strictEqual(runs[0].project, vivadoProjectsProvider.projects[0]);
+        assert.strictEqual(runs[0].contextValue, 'vivadoSynthesisRunItem');
+        assert.strictEqual(runs[1].contextValue, 'vivadoImplementationRunItem');
         assert.strictEqual(runs[0].description, 'synthesis: complete');
         assert.strictEqual(runs[1].description, 'implementation: running');
         assert.strictEqual(reports[0].label, 'timing_summary.rpt');

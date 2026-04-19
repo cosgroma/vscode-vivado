@@ -73,6 +73,17 @@ export function buildVivadoTclFileContent(tcl: string, metadata: VivadoTclFileCo
     ].join('\n');
 }
 
+export function quoteTclString(value: string): string {
+    return `"${value
+        .replace(/\\/g, '\\\\')
+        .replace(/\$/g, '\\$')
+        .replace(/"/g, '\\"')
+        .replace(/\[/g, '\\[')
+        .replace(/\]/g, '\\]')
+        .replace(/\r/g, '\\r')
+        .replace(/\n/g, '\\n')}"`;
+}
+
 function formatTimestamp(now: Date): string {
     return [
         now.getUTCFullYear().toString().padStart(4, '0'),

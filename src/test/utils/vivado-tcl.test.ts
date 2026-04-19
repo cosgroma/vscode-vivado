@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 import {
     buildVivadoTclFileContent,
     buildVivadoTclFileName,
+    quoteTclString,
     resolveVivadoTclDirectory,
     writeVisibleVivadoTclScript,
 } from '../../utils/vivado-tcl';
@@ -82,6 +83,16 @@ suite('Vivado TCL script visibility', () => {
         assert.ok(content.includes('# Working directory: /workspace/project'));
         assert.ok(content.includes('# Rerun command:'));
         assert.ok(content.endsWith('open_project project.xpr\nexit\n'));
+    });
+
+    test('quotes TCL strings used by generated Vivado commands', () => {
+        const quoted = quoteTclString('C:\\work\\$top["a"]\r\n');
+
+        assert.strictEqual(quoted[0], '"');
+        assert.strictEqual(quoted[quoted.length - 1], '"');
+        assert.ok(quoted.includes('C:\\\\work\\\\\\$top'));
+        assert.ok(quoted.includes('\\[\\"a\\"\\]'));
+        assert.ok(quoted.endsWith('\\r\\n"'));
     });
 
     test('writes the visible TCL script to disk', () => {

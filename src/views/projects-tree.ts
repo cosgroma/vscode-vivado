@@ -113,7 +113,7 @@ export class VivadoProjectTreeItem extends TreeItem {
             'vivadoConstraintFileItem',
             () => this.project.constraints,
         );
-        this._runsItem = new VivadoRunsItem(() => this.project.runs);
+        this._runsItem = new VivadoRunsItem(() => this.project, () => this.project.runs);
         this._reportsItem = new VivadoReportsItem(() => this.project.reports);
 
         this.updateProject(project);
@@ -183,12 +183,14 @@ export class VivadoProjectFileItem extends TreeItem {
 }
 
 class VivadoRunsItem extends TreeItem {
+    private readonly _getProject: () => VivadoProject;
     private readonly _getRuns: () => VivadoRun[];
 
-    constructor(getRuns: () => VivadoRun[]) {
+    constructor(getProject: () => VivadoProject, getRuns: () => VivadoRun[]) {
         super('Runs', vscode.TreeItemCollapsibleState.Collapsed);
         this.contextValue = 'vivadoRunsItem';
         this.iconPath = new vscode.ThemeIcon('run-all');
+        this._getProject = getProject;
         this._getRuns = getRuns;
     }
 
@@ -196,17 +198,19 @@ class VivadoRunsItem extends TreeItem {
         return Promise.resolve(this._getRuns()
             .slice()
             .sort(compareVivadoRuns)
-            .map(run => new VivadoRunTreeItem(run)));
+            .map(run => new VivadoRunTreeItem(this._getProject(), run)));
     }
 }
 
 export class VivadoRunTreeItem extends TreeItem {
+    public readonly project: VivadoProject;
     public readonly run: VivadoRun;
 
-    constructor(run: VivadoRun) {
+    constructor(project: VivadoProject, run: VivadoRun) {
         super(run.name);
+        this.project = project;
         this.run = run;
-        this.contextValue = 'vivadoRunItem';
+        this.contextValue = contextValueForRunType(run.type);
         this.description = `${formatRunType(run.type)}: ${formatRunStatus(run.status)}`;
         this.tooltip = [
             `Run: ${run.name}`,
@@ -216,6 +220,17 @@ export class VivadoRunTreeItem extends TreeItem {
             run.parentRunName ? `Parent: ${run.parentRunName}` : undefined,
         ].filter((line): line is string => Boolean(line)).join('\n');
         this.iconPath = iconForRunStatus(run.status);
+    }
+}
+
+function contextValueForRunType(type: VivadoRunType): string {
+    switch (type) {
+        case VivadoRunType.Synthesis:
+            return 'vivadoSynthesisRunItem';
+        case VivadoRunType.Implementation:
+            return 'vivadoImplementationRunItem';
+        default:
+            return 'vivadoRunItem';
     }
 }
 
