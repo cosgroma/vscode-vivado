@@ -37,6 +37,7 @@ nav:
   - Development: development.md
   - Designs:
       - Vivado Run Commands: designs/vivado-run-commands.md
+      - Vivado Run Maintenance: designs/vivado-run-maintenance.md
   - Testing: testing.md
   - Issue Dependency Plan: issue-dependency-plan.md
   - References:
