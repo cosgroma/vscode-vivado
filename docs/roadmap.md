@@ -146,10 +146,11 @@ Build the Vivado workflow in small, testable slices:
 4. Add `vivadoRun(...)` for Tcl-backed Vivado tasks.
 5. Render a minimal Vivado tree with sources, constraints, runs, and reports.
 6. Add commands for opening the Vivado GUI, running synthesis, running implementation, and generating a bitstream.
-7. Add diagnostics and report parsing.
-8. Add XSim simulation commands.
-9. Add IP and block design commands.
-10. Add hardware programming and debug commands.
+7. Add generated TCL preview plus reset and clean commands for selected runs.
+8. Add diagnostics and report parsing.
+9. Add XSim simulation commands.
+10. Add IP and block design commands.
+11. Add hardware programming and debug commands.
 
 ## Project Editing
 

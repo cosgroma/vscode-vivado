@@ -2,14 +2,14 @@
 
 VS Code Vivado is a Visual Studio Code extension project for bringing AMD Vivado workflows into the editor.
 
-The repository currently contains an inherited Vitis HLS extension baseline. That baseline discovers `hls.app` project files and provides project tree actions for source files, test bench files, C simulation, C synthesis, and C/RTL cosimulation.
+The repository started from an inherited Vitis HLS extension baseline. That baseline discovers `hls.app` project files and provides project tree actions for source files, test bench files, C simulation, C synthesis, and C/RTL cosimulation.
 
-The direction for this repository is broader Vivado project support: discovering Vivado projects, surfacing design sources and constraints, running common Vivado flows, and making project state visible inside VS Code.
+The current Vivado workflow discovers `.xpr` projects, surfaces sources, constraints, runs, and reports, and runs project-mode build and maintenance actions through visible TCL.
 
 !!! warning
-    The current implementation is still Vitis HLS-oriented. The Vivado support described in these docs is the desired direction unless a section is explicitly marked as current behavior.
+    Some Vivado sections describe the desired direction for future milestones. Sections marked as current behavior describe the shipped extension surface.
 
-## Current Baseline
+## Current Support
 
 - Discover Vitis HLS projects in a VS Code workspace.
 - Browse source and test bench files from the Projects tree.
@@ -18,12 +18,18 @@ The direction for this repository is broader Vivado project support: discovering
 - Run C synthesis.
 - Run C/RTL cosimulation.
 - Surface C simulation diagnostics through the contributed problem matcher.
+- Discover Vivado projects from `.xpr` files.
+- Browse Vivado design sources, simulation sources, constraints, runs, and reports.
+- Open Vivado projects in the Vivado IDE.
+- Run synthesis, implementation, and bitstream generation through visible TCL-backed tasks.
+- Preview generated TCL without executing Vivado.
+- Reset selected Vivado synthesis or implementation runs.
+- Clean generated outputs for selected Vivado synthesis or implementation runs.
 
 ## Desired Vivado Support
 
-- Discover Vivado projects from `.xpr` files.
 - Show RTL sources, block designs, constraints, simulation sources, IP, and generated outputs.
-- Run synthesis, implementation, bitstream generation, simulation, and reports from VS Code tasks.
+- Run simulation and report-generation flows from VS Code tasks.
 - Parse Vivado diagnostics and link messages back to source files.
 - Support TCL-first automation so the extension can mirror reproducible command-line flows.
 - Keep Vitis HLS support available where it helps FPGA projects that use both HLS and Vivado.

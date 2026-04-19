@@ -119,6 +119,40 @@ project-mode implementation run. The command generates visible TCL that opens
 the `.xpr`, calls `launch_runs -to_step write_bitstream`, waits for the run,
 and checks that Vivado reports `PROGRESS` as `100%`.
 
+### Preview Generated TCL
+
+Use the `Preview Generated TCL` context action on a Vivado project node,
+synthesis run node, or implementation run node to inspect extension-generated
+TCL without launching Vivado. Project-level previews offer the build actions
+available for the project. Run-level previews also include run maintenance
+actions that are valid for that run.
+
+Preview documents are untitled TCL documents. They include a preview-only
+header, the selected project and run, and a destructive marker for reset and
+clean actions.
+
+### Reset Run
+
+Use the `Reset Run` context action on a synthesis or implementation run node to
+reset that selected Vivado run. The command requires modal confirmation before
+generating TCL or launching Vivado, rejects project-only targets, and refuses to
+start while another Vivado task is active.
+
+The generated TCL opens the `.xpr`, resolves the selected run with `get_runs`,
+calls `reset_runs`, and closes the project.
+
+### Clean Run Outputs
+
+Use the `Clean Run Outputs` context action on a synthesis or implementation run
+node to reset the selected run and delete only the Vivado-reported run output
+directory. The command requires modal confirmation before generating TCL or
+launching Vivado, rejects project-only targets, and refuses to start while
+another Vivado task is active.
+
+Before deleting anything, the generated TCL reads the run `DIRECTORY` property,
+normalizes it, rejects empty paths, rejects the project root, and rejects paths
+outside the project root.
+
 ## Planned Vivado Features
 
 The extension should grow from HLS project management into Vivado project support. The desired Vivado features are listed here as the product target.
@@ -156,8 +190,7 @@ Parse Vivado messages from task output and report files. Diagnostics should link
 ### TCL Workflow
 
 Support project-based and script-based flows. Users should be able to run
-checked-in TCL scripts, generate project summaries, and inspect the exact
-commands issued by the extension.
+checked-in TCL scripts and generate project summaries.
 
 ### HLS And Vivado Together
 
