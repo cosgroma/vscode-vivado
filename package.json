@@ -131,6 +131,11 @@
         "icon": "$(open-preview)"
       },
       {
+        "command": "vscode-vivado.projects.previewGeneratedTcl",
+        "title": "Preview Generated TCL",
+        "icon": "$(open-preview)"
+      },
+      {
         "command": "vscode-vivado.projects.runSynthesis",
         "title": "Run Synthesis",
         "icon": "$(debug-start)"
@@ -190,6 +195,10 @@
           "when": "false"
         },
         {
+          "command": "vscode-vivado.projects.previewGeneratedTcl",
+          "when": "false"
+        },
+        {
           "command": "vscode-vivado.projects.runSynthesis",
           "when": "false"
         },
@@ -236,6 +245,11 @@
           "group": "inline"
         },
         {
+          "command": "vscode-vivado.projects.previewGeneratedTcl",
+          "when": "view == projectsView && viewItem == vivadoProjectItem",
+          "group": "inline@4"
+        },
+        {
           "command": "vscode-vivado.projects.runSynthesis",
           "when": "view == projectsView && viewItem == vivadoProjectItem",
           "group": "inline@1"
@@ -244,6 +258,11 @@
           "command": "vscode-vivado.projects.runSynthesis",
           "when": "view == projectsView && viewItem == vivadoSynthesisRunItem",
           "group": "inline"
+        },
+        {
+          "command": "vscode-vivado.projects.previewGeneratedTcl",
+          "when": "view == projectsView && viewItem == vivadoSynthesisRunItem",
+          "group": "inline@1"
         },
         {
           "command": "vscode-vivado.projects.runImplementation",
@@ -264,6 +283,11 @@
           "command": "vscode-vivado.projects.generateBitstream",
           "when": "view == projectsView && viewItem == vivadoImplementationRunItem",
           "group": "inline@1"
+        },
+        {
+          "command": "vscode-vivado.projects.previewGeneratedTcl",
+          "when": "view == projectsView && viewItem == vivadoImplementationRunItem",
+          "group": "inline@2"
         }
       ]
     },

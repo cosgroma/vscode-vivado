@@ -27,14 +27,21 @@ export interface ResolvedVivadoRunCommand {
     run: VivadoRun;
 }
 
-export interface VivadoRunCommandDefinition {
+export interface VivadoTclActionDefinition {
+    actionId: string;
+    title: string;
     actionName: string;
     taskActionName: string;
     runType: VivadoRunType;
     runDescription?: string;
     defaultRunName: string;
+    supportsProjectTarget: boolean;
+    supportsRunTarget: boolean;
+    destructive?: boolean;
     buildTcl: (project: VivadoProject, run: VivadoRun) => string;
 }
+
+export type VivadoRunCommandDefinition = VivadoTclActionDefinition;
 
 export async function runVivadoProjectCommand(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
@@ -87,7 +94,7 @@ export async function runVivadoProjectCommand(
 
 export function resolveVivadoRunTarget(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
-    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'runDescription' | 'defaultRunName'>,
+    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'runDescription' | 'defaultRunName' | 'supportsProjectTarget' | 'supportsRunTarget'>,
 ): ResolvedVivadoRunCommand {
     const runDescription = getRunDescription(definition);
 
@@ -99,6 +106,13 @@ export function resolveVivadoRunTarget(
     }
 
     if (target instanceof VivadoProject) {
+        if (!definition.supportsProjectTarget) {
+            throw new Error(
+                `Select ${articleFor(runDescription)} ${runDescription} run in the Projects view ` +
+                `before running ${definition.actionName}.`,
+            );
+        }
+
         return {
             project: target,
             run: chooseDefaultRun(target, definition),
@@ -113,13 +127,20 @@ export function resolveVivadoRunTarget(
     }
 
     if (!target.run) {
+        if (!definition.supportsProjectTarget) {
+            throw new Error(
+                `Select ${articleFor(runDescription)} ${runDescription} run in the Projects view ` +
+                `before running ${definition.actionName}.`,
+            );
+        }
+
         return {
             project: target.project,
             run: chooseDefaultRun(target.project, definition),
         };
     }
 
-    if (!(target.run instanceof VivadoRun) || target.run.type !== definition.runType) {
+    if (!definition.supportsRunTarget || !(target.run instanceof VivadoRun) || target.run.type !== definition.runType) {
         throw new Error(
             `Select ${articleFor(runDescription)} ${runDescription} run or Vivado project ` +
             `before running ${definition.actionName}.`,

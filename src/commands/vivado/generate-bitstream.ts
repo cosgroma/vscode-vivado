@@ -17,12 +17,16 @@ const commandId = 'vscode-vivado.projects.generateBitstream';
 export type GenerateVivadoBitstreamDependencies = RunVivadoCommandDependencies;
 export type GenerateVivadoBitstreamOptions = RunVivadoCommandOptions;
 
-const bitstreamCommandDefinition: VivadoRunCommandDefinition = {
+export const vivadoBitstreamActionDefinition: VivadoRunCommandDefinition = {
+    actionId: 'generateBitstream',
+    title: 'Generate Bitstream',
     actionName: 'bitstream generation',
     taskActionName: 'Bitstream',
     runType: VivadoRunType.Implementation,
     runDescription: 'implementation',
     defaultRunName: 'impl_1',
+    supportsProjectTarget: true,
+    supportsRunTarget: true,
     buildTcl: buildVivadoBitstreamTcl,
 };
 
@@ -30,7 +34,7 @@ export default async function generateVivadoBitstream(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
     options: GenerateVivadoBitstreamOptions = {},
 ): Promise<boolean> {
-    return runVivadoProjectCommand(target, bitstreamCommandDefinition, options);
+    return runVivadoProjectCommand(target, vivadoBitstreamActionDefinition, options);
 }
 
 export function buildVivadoBitstreamTcl(project: VivadoProject, run: VivadoRun): string {
@@ -53,7 +57,7 @@ export function buildVivadoBitstreamTaskName(project: VivadoProject, run: Vivado
 }
 
 export function resolveBitstreamTarget(target: VivadoProject | VivadoRunCommandTarget | undefined): ResolvedVivadoRunCommand {
-    return resolveVivadoRunTarget(target, bitstreamCommandDefinition);
+    return resolveVivadoRunTarget(target, vivadoBitstreamActionDefinition);
 }
 
 export { commandId as generateVivadoBitstreamCommandId };
