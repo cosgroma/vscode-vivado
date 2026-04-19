@@ -244,7 +244,6 @@ suite('runVivadoImplementation', () => {
 
 suite('Vivado implementation package contribution', () => {
     test('contributes Run Implementation to project and implementation run tree items', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pkg = require('../../../package.json');
         const command = pkg.contributes.commands.find((entry: { command: string }) => entry.command === runVivadoImplementationCommandId);
         const paletteEntry = pkg.contributes.menus.commandPalette.find((entry: { command: string }) => entry.command === runVivadoImplementationCommandId);

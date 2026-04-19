@@ -231,7 +231,6 @@ suite('openVivadoProject', () => {
 
 suite('Vivado open project package contribution', () => {
     test('contributes the Open in Vivado command only to Vivado project tree items', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pkg = require('../../../package.json');
         const command = pkg.contributes.commands.find((entry: { command: string }) => entry.command === openVivadoProjectCommandId);
         const paletteEntry = pkg.contributes.menus.commandPalette.find((entry: { command: string }) => entry.command === openVivadoProjectCommandId);

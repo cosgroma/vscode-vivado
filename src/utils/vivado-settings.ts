@@ -25,6 +25,8 @@ export interface VivadoSettingsOptions {
     platform?: NodeJS.Platform;
 }
 
+type PathApi = typeof path.posix;
+
 export function getVivadoSettings(options: VivadoSettingsOptions = {}): VivadoSettings {
     const configuration = options.configuration ?? vscode.workspace.getConfiguration(vivadoConfigSection);
     const platform = options.platform ?? process.platform;
@@ -117,7 +119,7 @@ function looksLikePath(value: string, platform: NodeJS.Platform): boolean {
     return value.includes('/') || value.includes('\\') || getPathApi(platform).isAbsolute(value);
 }
 
-function getPathApi(platform: NodeJS.Platform): path.PlatformPath {
+function getPathApi(platform: NodeJS.Platform): PathApi {
     return platform === 'win32' ? path.win32 : path.posix;
 }
 

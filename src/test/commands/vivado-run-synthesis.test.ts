@@ -244,7 +244,6 @@ suite('runVivadoSynthesis', () => {
 
 suite('Vivado synthesis package contribution', () => {
     test('contributes Run Synthesis to project and synthesis run tree items', () => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
         const pkg = require('../../../package.json');
         const command = pkg.contributes.commands.find((entry: { command: string }) => entry.command === runVivadoSynthesisCommandId);
         const paletteEntry = pkg.contributes.menus.commandPalette.find((entry: { command: string }) => entry.command === runVivadoSynthesisCommandId);
