@@ -35,7 +35,7 @@ export function getVivadoSettings(options: VivadoSettingsOptions = {}): VivadoSe
         configuration.get<string[]>('projectSearchGlobs', defaultProjectSearchGlobs),
         defaultProjectSearchGlobs
     );
-    const preserveRunLogs = configuration.get<boolean>('preserveRunLogs', true) !== false;
+    const preserveRunLogs = normalizeBooleanSetting(configuration.get<unknown>('preserveRunLogs', true), true);
 
     return {
         vivadoPath,
@@ -119,6 +119,10 @@ function getPathApi(platform: NodeJS.Platform): path.PlatformPath {
 
 function normalizeStringSetting(value: string | undefined): string {
     return typeof value === 'string' ? value.trim() : '';
+}
+
+function normalizeBooleanSetting(value: unknown, fallback: boolean): boolean {
+    return typeof value === 'boolean' ? value : fallback;
 }
 
 function normalizeStringArray(value: unknown, fallback: string[]): string[] {

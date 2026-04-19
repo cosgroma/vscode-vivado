@@ -26,7 +26,7 @@ tree.
 ## Target Vivado Workflow
 
 The desired workflow is to open a VS Code workspace that contains one or more
-Vivado project files named `.xpr`.
+Vivado project files with the `.xpr` extension.
 
 The extension should then activate, discover Vivado projects, and show a Vivado-focused project tree with:
 

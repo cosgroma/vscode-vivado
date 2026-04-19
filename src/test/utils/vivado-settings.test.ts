@@ -119,6 +119,17 @@ suite('Vivado settings resolution', () => {
         assert.deepStrictEqual(settings.projectSearchGlobs, ['**/*.xpr']);
     });
 
+    test('falls back to preserving run logs when the setting is not boolean', () => {
+        const settings = getVivadoSettings({
+            configuration: fakeConfiguration({
+                preserveRunLogs: 'false',
+            }),
+            platform: 'linux',
+        });
+
+        assert.strictEqual(settings.preserveRunLogs, true);
+    });
+
     test('keeps command-name executable overrides on PATH', () => {
         const settings = getVivadoSettings({
             configuration: fakeConfiguration({
