@@ -35,6 +35,8 @@ nav:
   - Vivado Roadmap: roadmap.md
   - Settings: settings.md
   - Development: development.md
+  - Designs:
+      - Vivado Run Commands: designs/vivado-run-commands.md
   - Testing: testing.md
   - Issue Dependency Plan: issue-dependency-plan.md
   - References:
