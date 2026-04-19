@@ -57,10 +57,11 @@ suite('Vivado open project command construction', () => {
             uri: vscode.Uri.file('C:/workspace/demo'),
             xprFile: vscode.Uri.file('C:/workspace/demo/demo.xpr'),
         });
+        const escapedPath = project.xprFile.fsPath.replace(/\\/g, '\\\\');
 
         assert.strictEqual(
             buildVivadoOpenProjectTcl(project),
-            'open_project "c:\\\\workspace\\\\demo\\\\demo.xpr"',
+            `open_project "${escapedPath}"`,
         );
     });
 
