@@ -14,7 +14,28 @@ import {
     writeVisibleVivadoTclScript,
 } from '../../utils/vivado-tcl';
 
+const createdTempDirectories: string[] = [];
+
+function makeTempDirectory(prefix: string): string {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+    createdTempDirectories.push(directory);
+    return directory;
+}
+
+function cleanupTempDirectories(): void {
+    while (createdTempDirectories.length > 0) {
+        const directory = createdTempDirectories.pop();
+        if (directory) {
+            fs.rmSync(directory, { recursive: true, force: true });
+        }
+    }
+}
+
 suite('Vivado TCL script visibility', () => {
+    teardown(() => {
+        cleanupTempDirectories();
+    });
+
     test('resolves generated TCL under the configured workspace-relative directory', () => {
         const startPath = vscode.Uri.file(path.join(os.tmpdir(), 'vivado-project'));
         const directory = resolveVivadoTclDirectory(startPath, {
@@ -28,7 +49,7 @@ suite('Vivado TCL script visibility', () => {
     });
 
     test('supports an absolute generated TCL directory', () => {
-        const absoluteDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'vivado-tcl-absolute-'));
+        const absoluteDirectory = makeTempDirectory('vivado-tcl-absolute-');
         const directory = resolveVivadoTclDirectory(vscode.Uri.file('/ignored'), {
             generatedTclDirectory: absoluteDirectory,
         });
@@ -64,8 +85,8 @@ suite('Vivado TCL script visibility', () => {
     });
 
     test('writes the visible TCL script to disk', () => {
-        const startPath = vscode.Uri.file(fs.mkdtempSync(path.join(os.tmpdir(), 'vivado-project-')));
-        const tclDirectory = vscode.Uri.file(fs.mkdtempSync(path.join(os.tmpdir(), 'vivado-tcl-')));
+        const startPath = vscode.Uri.file(makeTempDirectory('vivado-project-'));
+        const tclDirectory = vscode.Uri.file(makeTempDirectory('vivado-tcl-'));
         const script = writeVisibleVivadoTclScript({
             startPath,
             taskName: 'Run Implementation',

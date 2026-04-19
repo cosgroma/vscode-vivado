@@ -73,8 +73,21 @@ function stubVivadoRunTasks(exitCode: number | undefined): {
     };
 }
 
+const createdTclDirectories: string[] = [];
+
 function makeTclDirectory(): vscode.Uri {
-    return vscode.Uri.file(fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-vivado-tcl-')));
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'vscode-vivado-tcl-'));
+    createdTclDirectories.push(directory);
+    return vscode.Uri.file(directory);
+}
+
+function cleanupTclDirectories(): void {
+    while (createdTclDirectories.length > 0) {
+        const directory = createdTclDirectories.pop();
+        if (directory) {
+            fs.rmSync(directory, { recursive: true, force: true });
+        }
+    }
 }
 
 suite('vivadoRun command construction', () => {
@@ -137,6 +150,10 @@ suite('vivadoRun command construction', () => {
 });
 
 suite('vivadoRun task execution', () => {
+    teardown(() => {
+        cleanupTclDirectories();
+    });
+
     test('writes generated TCL to a temp file before executing the task', async () => {
         const expectedTcl = 'open_project project.xpr\nexit';
         const { cleanup, getTask } = stubVivadoRunTasks(0);
@@ -192,8 +209,6 @@ suite('vivadoRun task execution', () => {
                 {
                     settings: makeSettings(),
                     platform: 'win32',
-                    preserveTclFile: false,
-                    tclDirectory: makeTclDirectory(),
                 },
             );
         } finally {
@@ -216,7 +231,6 @@ suite('vivadoRun task execution', () => {
                 {
                     settings: makeSettings(),
                     platform: 'win32',
-                    preserveTclFile: false,
                     tclDirectory: makeTclDirectory(),
                 },
             );
@@ -240,7 +254,6 @@ suite('vivadoRun task execution', () => {
                 {
                     settings: makeSettings(),
                     platform: 'win32',
-                    preserveTclFile: false,
                     tclDirectory: makeTclDirectory(),
                 },
             );
@@ -263,7 +276,6 @@ suite('vivadoRun task execution', () => {
                 {
                     settings: makeSettings(),
                     platform: 'win32',
-                    preserveTclFile: false,
                     tclDirectory: makeTclDirectory(),
                 },
             );
@@ -286,7 +298,6 @@ suite('vivadoRun task execution', () => {
                 {
                     settings: makeSettings(),
                     platform: 'win32',
-                    preserveTclFile: false,
                     tclDirectory: makeTclDirectory(),
                 },
             );

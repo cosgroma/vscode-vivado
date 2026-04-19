@@ -9,13 +9,16 @@ import {
     writeVisibleVivadoTclScript,
 } from './vivado-tcl';
 
-export interface VivadoRunOptions {
+export interface VivadoRunScriptOptions {
     settings?: VivadoSettings;
     presentationOptions?: vscode.TaskPresentationOptions;
     problemMatchers?: string[];
+    platform?: NodeJS.Platform;
+}
+
+export interface VivadoRunOptions extends VivadoRunScriptOptions {
     preserveTclFile?: boolean;
     tclDirectory?: vscode.Uri;
-    platform?: NodeJS.Platform;
     now?: Date;
 }
 
@@ -48,9 +51,10 @@ export async function vivadoRun(
         tclFile,
         taskName,
         {
-            ...options,
             settings,
-            preserveTclFile: options.preserveTclFile ?? true,
+            presentationOptions: options.presentationOptions,
+            problemMatchers: options.problemMatchers,
+            platform,
         },
         options.preserveTclFile === false ? tclFile.fsPath : undefined,
     );
@@ -60,7 +64,7 @@ export async function vivadoRunScript(
     startPath: vscode.Uri,
     tclFile: vscode.Uri,
     taskName: string,
-    options: VivadoRunOptions = {},
+    options: VivadoRunScriptOptions = {},
     cleanupTclFilePath?: string,
 ): Promise<number | undefined> {
     const platform = options.platform ?? process.platform;
@@ -151,7 +155,7 @@ function buildVivadoTask(
     tclFile: vscode.Uri,
     taskName: string,
     settings: VivadoSettings,
-    options: VivadoRunOptions,
+    options: VivadoRunScriptOptions,
     platform: NodeJS.Platform,
 ): vscode.Task {
     const shellExecution = new vscode.ShellExecution(
