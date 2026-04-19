@@ -31,6 +31,7 @@ export interface VivadoRunCommandDefinition {
     actionName: string;
     taskActionName: string;
     runType: VivadoRunType;
+    runDescription?: string;
     defaultRunName: string;
     buildTcl: (project: VivadoProject, run: VivadoRun) => string;
 }
@@ -86,11 +87,13 @@ export async function runVivadoProjectCommand(
 
 export function resolveVivadoRunTarget(
     target: VivadoProject | VivadoRunCommandTarget | undefined,
-    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'defaultRunName'>,
+    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'runDescription' | 'defaultRunName'>,
 ): ResolvedVivadoRunCommand {
+    const runDescription = getRunDescription(definition);
+
     if (!target) {
         throw new Error(
-            `Select a Vivado project or ${articleFor(definition.actionName)} ${definition.actionName} run in the Projects view ` +
+            `Select a Vivado project or ${articleFor(runDescription)} ${runDescription} run in the Projects view ` +
             `before running ${definition.actionName}.`,
         );
     }
@@ -104,7 +107,7 @@ export function resolveVivadoRunTarget(
 
     if (!(target.project instanceof VivadoProject)) {
         throw new Error(
-            `Select a Vivado project or ${articleFor(definition.actionName)} ${definition.actionName} run in the Projects view ` +
+            `Select a Vivado project or ${articleFor(runDescription)} ${runDescription} run in the Projects view ` +
             `before running ${definition.actionName}.`,
         );
     }
@@ -118,7 +121,7 @@ export function resolveVivadoRunTarget(
 
     if (!(target.run instanceof VivadoRun) || target.run.type !== definition.runType) {
         throw new Error(
-            `Select ${articleFor(definition.actionName)} ${definition.actionName} run or Vivado project ` +
+            `Select ${articleFor(runDescription)} ${runDescription} run or Vivado project ` +
             `before running ${definition.actionName}.`,
         );
     }
@@ -135,7 +138,7 @@ export function buildVivadoRunTaskName(taskActionName: string, project: VivadoPr
 
 function chooseDefaultRun(
     project: VivadoProject,
-    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'defaultRunName'>,
+    definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runType' | 'runDescription' | 'defaultRunName'>,
 ): VivadoRun {
     const runs = project.runsByType(definition.runType)
         .slice()
@@ -143,7 +146,7 @@ function chooseDefaultRun(
     const run = runs.find(candidate => candidate.name === definition.defaultRunName) ?? runs[0];
 
     if (!run) {
-        throw new Error(`Vivado project ${project.name} has no ${definition.actionName} runs.`);
+        throw new Error(`Vivado project ${project.name} has no ${getRunDescription(definition)} runs.`);
     }
 
     return run;
@@ -157,6 +160,10 @@ function ensureNoActiveVivadoTask(taskExecutions: readonly vscode.TaskExecution[
 
 function articleFor(value: string): 'a' | 'an' {
     return /^[aeiou]/i.test(value) ? 'an' : 'a';
+}
+
+function getRunDescription(definition: Pick<VivadoRunCommandDefinition, 'actionName' | 'runDescription'>): string {
+    return definition.runDescription ?? definition.actionName;
 }
 
 function resolveDependencies(dependencies: Partial<RunVivadoCommandDependencies> = {}): RunVivadoCommandDependencies {
