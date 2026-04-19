@@ -103,6 +103,14 @@ node to launch the selected project-mode synthesis run as a VS Code task. The
 command generates visible TCL that opens the `.xpr`, calls `launch_runs`, waits
 for the run, and checks that Vivado reports `PROGRESS` as `100%`.
 
+### Run Implementation
+
+Use the `Run Implementation` context action on a Vivado project node or
+implementation run node to launch the selected project-mode implementation run
+as a VS Code task. The command generates visible TCL that opens the `.xpr`,
+calls `launch_runs`, waits for the run, and checks that Vivado reports
+`PROGRESS` as `100%`.
+
 ## Planned Vivado Features
 
 The extension should grow from HLS project management into Vivado project support. The desired Vivado features are listed here as the product target.
@@ -129,7 +137,6 @@ Expose common Vivado runs as VS Code commands and tasks:
 
 - Elaborate design.
 - Run behavioral simulation.
-- Run implementation.
 - Generate bitstream.
 - Open timing, utilization, DRC, and power reports.
 
