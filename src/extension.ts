@@ -10,6 +10,7 @@ import stopCsim from './commands/project/run/projects-stop-csim';
 import stopCsynth from './commands/project/run/projects-stop-csynth';
 import { OutputConsole } from './output-console';
 import ProjectManager from './project-manager';
+import VivadoProjectManager from './vivado-project-manager';
 import ProjectsViewTreeProvider, { ProjectFileItem, ProjectSourceItem, ProjectTestBenchItem } from './views/projects-tree';
 
 // TODO Make Vitis Unified IDE optional
@@ -26,7 +27,10 @@ export function activate(context: vscode.ExtensionContext) {
 	checkCppProperties();
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('vitis-hls-ide.projects.refresh', () => ProjectManager.instance.refresh()),
+		vscode.commands.registerCommand('vitis-hls-ide.projects.refresh', () => {
+			ProjectManager.instance.refresh();
+			VivadoProjectManager.instance.refresh();
+		}),
 		vscode.commands.registerCommand('vitis-hls-ide.projects.runCosim', runCosim),
 		vscode.commands.registerCommand('vitis-hls-ide.projects.runCsim', runCsim),
 		vscode.commands.registerCommand('vitis-hls-ide.projects.runCsynth', runCsynth),
@@ -40,6 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 		projectsViewProvider,
 		OutputConsole.instance,
 		ProjectManager.instance,
+		VivadoProjectManager.instance,
 		// Check CPP properties for HLS path when the cpp properties file is changed
 		vscode.workspace.onDidChangeTextDocument((e) => {
 			const cppPropertiesPath = vscode.workspace.workspaceFolders ?
